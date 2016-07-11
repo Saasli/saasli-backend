@@ -2,12 +2,12 @@
   "name": "saasli-backend",
   "version": "0.0.1",
   "description": "A Serverless Project and its Serverless Plugin dependencies.",
-  "author": "me",
+  "author": "Saasli Inc.",
   "license": "MIT",
-  "private": false,
+  "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/"
+    "url": "git+https://github.com/Saasli/saasli-backend"
   },
   "dependencies": {}
 }

@@ -4,11 +4,16 @@
   "description": "All functions dealing with a salesforce account",
   "customName": false,
   "customRole": false,
-  "handler": "handler.handler",
+  "handler": "account/handler.handler",
   "timeout": 6,
   "memorySize": 1024,
   "authorizer": {},
   "custom": {
+    "includePaths": [
+      ".",
+      "../../api/vendored",
+      "../../api/lib"
+    ],
     "excludePatterns": []
   },
   "endpoints": [
