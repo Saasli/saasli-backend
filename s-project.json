@@ -1,5 +1,7 @@
 {
   "name": "saasli-backend",
   "custom": {},
-  "plugins": []
+  "plugins": [
+    "serverless-cors-plugin"
+  ]
 }

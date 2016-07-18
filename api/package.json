@@ -1,0 +1,14 @@
+{
+  "name": "saasli-backend-modules",
+  "version": "1.0.0",
+  "description": "All the shared node libraries required by the API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Saasli Inc.",
+  "license": "MIT",
+  "dependencies": {
+    "node-salesforce": "^0.8.0"
+  }
+}

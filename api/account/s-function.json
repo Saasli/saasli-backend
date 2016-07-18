@@ -14,36 +14,15 @@
       "../../api/vendored",
       "../../api/lib"
     ],
-    "excludePatterns": []
+    "excludePatterns": [],
+    "cors": {
+      "allowOrigin": "*",
+      "allowHeaders": ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key"]
+    }
   },
   "endpoints": [
     {
       "path": "account",
-      "method": "GET",
-      "type": "AWS",
-      "authorizationType": "none",
-      "authorizerFunction": false,
-      "apiKeyRequired": false,
-      "requestParameters": {},
-      "requestTemplates": "$${apiGatewayRequestTemplate}",
-      "responses": {
-        "400": {
-          "statusCode": "400"
-        },
-        "default": {
-          "statusCode": "200",
-          "responseParameters": {},
-          "responseModels": {
-            "application/json;charset=UTF-8": "Empty"
-          },
-          "responseTemplates": {
-            "application/json;charset=UTF-8": ""
-          }
-        }
-      }
-    },
-    {
-      "path": "account/create",
       "method": "POST",
       "type": "AWS",
       "authorizationType": "none",
