@@ -26,6 +26,13 @@ class SFDC(object):
     def setSession(self, instance, sessionId):
         self.sf = Salesforce(instance=instance + '.salesforce.com', session_id=sessionId)
 
+    def query(select_fields, from_object, where_criteria, all):
+        formatted_select =  ", ".join(filter(None, select_fields))
+        query_string = "SELECT {} FROM {} WHERE {}".format(formatted_select, from_object, where_criteria)
+        result = self.sf.query_all(query_string) if all else self.sf.query(query_string)
+        return result['records']
+            
+
     def login(self):
         '''Connect to Salesforce API'''
      
