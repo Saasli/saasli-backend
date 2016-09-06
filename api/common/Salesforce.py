@@ -26,13 +26,15 @@ class SFDC(object):
     def setSession(self, instance, sessionId):
         self.sf = Salesforce(instance=instance + '.salesforce.com', session_id=sessionId)
 
-    def query(select_fields, from_object, where_criteria, all):
+    
+    def query(select_fields, from_object, where_criteria=None, all=False):
         formatted_select =  ", ".join(filter(None, select_fields))
         query_string = "SELECT {} FROM {} WHERE {}".format(formatted_select, from_object, where_criteria)
         result = self.sf.query_all(query_string) if all else self.sf.query(query_string)
         return result['records']
             
 
+    #TODO: Use the simple salesforce login
     def login(self):
         '''Connect to Salesforce API'''
      
@@ -74,6 +76,11 @@ class SFDC(object):
 
     def query_usage_history_types(self):
         query = "SELECT Id, Name FROM User_Usage_History_Event_Type__c"
+        query_results = self.sf.query(query)
+        return query_results['records']
+
+    def query_suggestion(self, id):
+        query = "SELECT Id, Name, WhatId__c, Status__c FROM Saasli_Suggestion__c WHERE Id = %s" % id
         query_results = self.sf.query(query)
         return query_results['records']
 

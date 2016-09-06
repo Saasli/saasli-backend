@@ -4,7 +4,7 @@
   "description": "Serverless Lambda function for project: saasli-backend",
   "customName": false,
   "customRole": false,
-  "handler": "handler.handler",
+  "handler": "suggestion/handler.handler",
   "timeout": 6,
   "memorySize": 1024,
   "authorizer": {},
@@ -45,7 +45,10 @@
   "environment": {
     "SERVERLESS_PROJECT": "${project}",
     "SERVERLESS_STAGE": "${stage}",
-    "SERVERLESS_REGION": "${region}"
+    "SERVERLESS_REGION": "${region}",
+    "SFDC_USER" : "${salesforce_username}",
+    "SFDC_PASSWORD" : "${salesforce_password}",
+    "SFDC_TOKEN" : "${salesforce_token}"
   },
   "vpc": {
     "securityGroupIds": [],

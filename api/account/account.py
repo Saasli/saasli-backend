@@ -1,6 +1,6 @@
 import sys, os
 #sys.path.insert(0, './lib')
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))) # /var/task/account
 sys.path.insert(0, './common')
 from xml.etree import ElementTree as ET
 from Salesforce import SFDC
@@ -9,7 +9,7 @@ import re
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-
+log.debug("acc Path: {}".format(os.path.dirname(__file__)))
 
 def get_account(id):
 	sf_api = SFDC(
