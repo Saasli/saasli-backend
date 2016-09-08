@@ -3,10 +3,14 @@ import boto3
 import json
 def account(event, context):
 	client = boto3.client('lambda')
-	response = client.invoke(
+	payload = json.dumps({'parameter' : 'value'}).encode()
+	print payload
+	response = json.loads(client.invoke(
 		FunctionName='salesforce-dev-get',
-		InvocationType='RequestResponse'
-		#Payload=b'bytes'|file,
-	)
-	message = json.loads(response['Payload'].read()).get('message')
-	return { "message from lib": message }
+		InvocationType='RequestResponse',
+		Payload=payload
+	)['Payload'].read())
+	print response
+	message = response.get('message')
+	back = response.get('back')
+	return { "message from lib": message, "paramter passed through" : back }

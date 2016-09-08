@@ -1,2 +1,3 @@
-def event(event, context):
-    return { "message": "You called the Salesforce Util!", "event": event }
+def event(payload, context):
+	print payload
+	return { "message": "You called the Salesforce Util!", "back": payload.get('parameter')}
