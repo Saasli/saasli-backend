@@ -1,5 +1,8 @@
 # saasli-backend
 
+## API Reference
+See the [documentation](https://saasli.github.io/docs/).
+
 ##Getting Started
 
 ###Quick Install
