@@ -9,6 +9,12 @@ class KMS(object):
 		#Decrypt
 		return True
 
+	#NOTE: unlike 'encrypt', no key_id is actually needed. AWS just determines if you have the rights to access it,
+	# and if so, it decrypts it.
 	def decrypt(self, cipher):
-		#Encrypt
-		return True
+		response = self.client.decrypt(
+			CiphertextBlob=cipher,
+			#EncryptionContext={ 'string': 'string' },
+			GrantTokens=[ 'string' ]
+		)
+		return response.get('Plaintext').decode('UTF-8')
