@@ -24,10 +24,8 @@ pip install virtualenv
 
 ###Nomenclature 
 
-- *service* : Each of the sub directories beneath `/api` are separate serverless services. 
+- *service* : Each of the sub directories beneath `/api` and `utils` are separate serverless services. The difference is that we hook `/api` services up to the API gateway so the world can access them. 
 - *function* : Within each service are functions. For example beneath the `/account` service we have `accounts` and `account`.
-- */lib* : Where we put all managed and requried python libraries to be pip installed. This is git ignored.
-- */utils* : Here is where we put any re-usable python modules that we manage. This is not gitignored
 
 
 ###Developing a Service
