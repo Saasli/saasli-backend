@@ -40,5 +40,7 @@ node_modules
 admin.env
 .env
 
-#Ignore _meta folder
-_meta
+#Saasli-Backend Specific
+**/lib
+*_venv
+.serverless
