@@ -22,7 +22,6 @@ class Microservice(object):
 class Credentials(object):
 	def __init__(self, id):
 		try:
-			print "CREDENTIALS: %s" % id
 			functions = Microservice()
 			# Get the encrypted data for the client
 			dynamoPayload = {
@@ -31,16 +30,13 @@ class Credentials(object):
 				'tablename' : 'clients'
 			}
 			encryptedCredentials = functions.request('dynamodb-dev-getitem', dynamoPayload)
-			print "ENCRYPTED: %s" % encryptedCredentials
 			# Decrypt the client credentials
 			kmsPayload = { 
 				'cipher' : encryptedCredentials.get('credentials').get('S')
 			}
-			print "KMS PAYLOAD: %s" % kmsPayload
+			# Assign all the encrypted fields to class attributes
 			for key, value in json.loads(functions.request('kms-dev-decrypt', kmsPayload)).iteritems():
 				print ("KEY: %s VALUE: %s" % (key,value))
 				setattr(self, key, value)
-			print "DONE CREDS"
-
 		except:
 			print 'No Such Client'

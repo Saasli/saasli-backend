@@ -1,5 +1,4 @@
 from tools import Microservice, Credentials
-import json
 functions = Microservice() # a global instantiation of the boto lambda abstraction
 
 def account(event, context):
