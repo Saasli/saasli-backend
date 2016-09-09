@@ -5,7 +5,7 @@ class DynamoDB(object):
 		self.client = boto3.client('dynamodb')
 
 	def get_item(self, tablename, key, value):
-		response = client.get_item(
+		response = self.client.get_item(
 			TableName=tablename,
 			Key={ key: { 'S': value } }
 		)

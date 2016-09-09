@@ -16,6 +16,12 @@ service: dynamodb # NOTE: update this with your service name
 provider:
   name: aws
   runtime: python2.7
+  iamRoleStatements:
+    - Action:
+        - dynamodb:GetItem
+        - dynamodb:Query
+      Effect: Allow
+      Resource: arn:aws:dynamodb:*
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"
@@ -45,8 +51,8 @@ provider:
 #  artifact: my-service-code.zip
 
 functions:
-  hello:
-    handler: handler.dynamodb
+  getitem:
+    handler: handler.getitem
 
 #   you can add any of the following events
 #    events:
