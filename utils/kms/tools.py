@@ -1,20 +1,21 @@
-# Thank you http://stackoverflow.com/questions/36784925/how-to-get-return-response-from-aws-lambda-function
 import boto3
+import base64
 
 class KMS(object):
 	def __init__(self):
 		self.client = boto3.client('kms')
 
-	def encrypt(self, text):
-		#Decrypt
-		return True
+	#NOTE: Serverless can't serialize the byte stream that encrypt returns
+	#so we base64 encode it.
+	def encrypt(self, key, text):
+		response = self.client.encrypt(
+			KeyId=key,
+			Plaintext=text
+		)
+		return base64.b64encode(response.get('CiphertextBlob'))
 
-	#NOTE: unlike 'encrypt', no key_id is actually needed. AWS just determines if you have the rights to access it,
-	# and if so, it decrypts it.
 	def decrypt(self, cipher):
 		response = self.client.decrypt(
-			CiphertextBlob=cipher,
-			#EncryptionContext={ 'string': 'string' },
-			GrantTokens=[ 'string' ]
+			CiphertextBlob=base64.b64decode(cipher),
 		)
-		return response.get('Plaintext').decode('UTF-8')
+		return response.get('Plaintext')

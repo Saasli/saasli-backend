@@ -16,6 +16,12 @@ service: kms # NOTE: update this with your service name
 provider:
   name: aws
   runtime: python2.7
+  iamRoleStatements:
+    - Action:
+        - kms:Decrypt
+        - kms:Encrypt
+      Effect: Allow
+      Resource: arn:aws:kms:us-east-1:114884950065:key/82718df8-8f0a-4f36-9c38-27dab7041fb7
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"
@@ -45,8 +51,10 @@ provider:
 #  artifact: my-service-code.zip
 
 functions:
-  kms:
-    handler: handler.kms
+  decrypt:
+    handler: handler.decrypt
+  encrypt:
+    handler: handler.encrypt
 
 #   you can add any of the following events
 #    events:
