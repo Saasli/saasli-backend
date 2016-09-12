@@ -45,3 +45,11 @@ class SalesforceClient(object):
 		except:
 			print "Salesforce Record Creation Failed: %s" % values
 			return None
+
+	#update and existing record given it's sf_id
+	def update(self, sf_id, object_type, values):
+		try:
+			sf_type = SFType(object_type, self.session_id, self.sf_instance)
+			return sf_type.update(sf_id, values)
+		except:
+			print "Salesforce Record Update Failed: %s" % values
