@@ -92,17 +92,16 @@ def put(payload, context):
 	else:
 		return None
 
-put({
-	"username" : "mc@tts.demo",
-	"password" : "salesforce3",
-	"token" : "5ZcOVNre0phV49496kGlhuWw",
-	"sf_object_id" : "Contact",
-	"sf_field_id" : "Email",
-	"sf_field_value" : "hgoddard+new@saasli.com",
-	"sf_values" : {
-		"Email" : "hgoddard+new@saasli.com",
-		"LastName" : "Hank88"
-	}
-}, None)
-# 	else:
-# 		return sf
+# For Local Testing Purposes
+# put({
+# 	"username" : "mc@tts.demo",
+# 	"password" : "salesforce3",
+# 	"token" : "5ZcOVNre0phV49496kGlhuWw",
+# 	"sf_object_id" : "Contact",
+# 	"sf_field_id" : "Email",
+# 	"sf_field_value" : "hgoddard+new@saasli.com",
+# 	"sf_values" : {
+# 		"Email" : "hgoddard+new@saasli.com",
+# 		"LastName" : "Hank88"
+# 	}
+# }, None)
