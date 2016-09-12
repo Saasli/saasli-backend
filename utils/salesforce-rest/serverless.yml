@@ -37,14 +37,13 @@ provider:
 #  region: us-east-1
 
 # you can add packaging information here
-artifact: my-service-code.zip
+#artifact: my-service-code.zip
 
 functions:
   get:
     handler: handler.get
-    package:
-      exclude:
-        - account_venv
+  put:
+    handler: handler.put
 
 #   you can add any of the following events
 #    events:

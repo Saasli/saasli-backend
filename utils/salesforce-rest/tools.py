@@ -1,0 +1,47 @@
+import sys
+sys.path.insert(0, './venv/lib/python2.7/site-packages/') #TODO: Keep an eye out for serverless recognizing venvs and packaging them automatically
+from simple_salesforce import Salesforce, SFType
+import json
+
+class SalesforceClient(object):
+	#grants a sf client if authorization is successful
+	def __init__(self, username, password, token):
+		try:
+			self.sf = Salesforce(
+				username=username, 
+				password=password, 
+				security_token=token
+			)
+			self.session_id = self.sf.session_id
+			self.sf_instance = self.sf.sf_instance
+		except:
+			print "Salesforce Auth Failed for: %s" % username
+
+	#little tool to turn an array into a field query string
+	def stringify(self, array):
+		out = ""
+		for item in array:
+			out += ", %s" % item
+		return out[1:]
+
+	#perform a sf query
+	def query(self, query_string):
+		try:
+			# return the first matching record if it exists, else None
+			resp = self.sf.query(query_string)
+			if (resp.get('totalSize') > 0):
+				return resp.get('records')[0]
+			else:
+				return None
+		except:
+			print "Salesforce Query Failed: %s" % query_string
+			return None
+
+	#create a new record of type 'object' with values of type dict
+	def create(self, object_type, values):
+		try:
+			sf_type = SFType(object_type, self.session_id, self.sf_instance)
+			return sf_type.create(values)
+		except:
+			print "Salesforce Record Creation Failed: %s" % values
+			return None
