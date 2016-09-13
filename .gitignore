@@ -42,5 +42,5 @@ admin.env
 
 #Saasli-Backend Specific
 **/lib
-*_venv
+*venv
 .serverless
