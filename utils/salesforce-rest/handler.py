@@ -33,31 +33,35 @@ from tools import SalesforceClient
 ######
 
 def get(payload, context):
+	# Auth
 	try:
-		sf = SalesforceClient(payload.get('username'), payload.get('password'), payload.get('token'))
+		sf = SalesforceClient(
+				payload.get('username'), 
+				payload.get('password'), 
+				payload.get('token')
+			)
 	except Exception, e:
 		return {'Error' : e.__dict__}
-	# build the query
-	query_string = "SELECT %s FROM %s WHERE %s = '%s' LIMIT 1" % (
-		sf.stringify(payload.get('sf_select_fields')),
-		payload.get('sf_object_id'), 
-		payload.get('sf_field_id'), 
-		payload.get('sf_field_value')
-	)
+	# Query
 	try:
-		return sf.query(query_string)
+		return sf.query(
+			payload.get('sf_select_fields'),
+			payload.get('sf_object_id'),
+			"%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
+		)
 	except Exception, e:
 		return {"Error" : e.__dict__}
 
-print get({
-	"username" : "mc@tts.demo",
-	"password" : "salesforce3",
-	"token" : "5ZcOVNre0phV49496kGlhuWw",
-	"sf_object_id" : "Contact",
-	"sf_field_id" : "Phone",
-	"sf_field_value" : "1800FAKE",
-	"sf_select_fields" : ['Id', 'Phone', 'Name', 'Tits']
-}, None)
+# # For Local Testing Purposes
+# print get({
+# 	"username" : "mc@tts.demo",
+# 	"password" : "salesforce3",
+# 	"token" : "5ZcOVNre0phV49496kGlhuWw",
+# 	"sf_object_id" : "Contact",
+# 	"sf_field_id" : "Phone",
+# 	"sf_field_value" : "1800FAKE",
+# 	"sf_select_fields" : ['Id', 'Phone', 'Name']
+# }, None)
 #####
 # put
 #
@@ -82,32 +86,39 @@ print get({
 #
 ######
 def put(payload, context):
-	sf = SalesforceClient(payload.get('username'), payload.get('password'), payload.get('token'))
-	if sf is not None:
-		# build the query to find if a specified object exists
-		query_string = "SELECT %s FROM %s WHERE %s = '%s' LIMIT 1" % (
+	# Auth
+	try:
+		sf = SalesforceClient(
+				payload.get('username'), 
+				payload.get('password'), 
+				payload.get('token')
+			)
+	except Exception, e:
+		return {'Error' : e.__dict__}
+	# Query
+	try:
+		exists = sf.query(
 			'Id',
-			payload.get('sf_object_id'), 
-			payload.get('sf_field_id'), 
-			payload.get('sf_field_value')
+			payload.get('sf_object_id'),
+			"%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
 		)
-		exists = sf.query(query_string)
-		if exists is not None: #do an update if it exists
-			try:
-				update_result = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
-				return {"Updated" : exists.get('Id')}
-			except Exception, e:
-				return {"Error" : e.__dict__}
-		else: #create it if not
-			try:
-				create_result = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
-				return {"Created" : create_result}
-			except Exception, e:
-				return {"Error" : e.__dict__}
-	else:
-		return None
+	except Exception, e:
+		return {'Error' : e.__dict__}
+	# Upsert
+	if exists is not None: #do an update if it exists
+		try:
+			update_result = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
+			return {"Updated" : exists.get('Id')}
+		except Exception, e:
+			return {"Error" : e.__dict__}
+	else: #create it if not
+		try:
+			create_result = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
+			return {"Created" : create_result}
+		except Exception, e:
+			return {"Error" : e.__dict__}
 
-# For Local Testing Purposes
+# # For Local Testing Purposes
 # put({
 # 	"username" : "mc@tts.demo",
 # 	"password" : "salesforce3",

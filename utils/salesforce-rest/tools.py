@@ -19,10 +19,11 @@ class SalesforceClient(object):
 		out = ""
 		for item in array:
 			out += ", %s" % item
-		return out[1:]
+		return out[1:] #greasy skip the first comma
 
-	#perform a sf query
-	def query(self, query_string):
+	#perform a sf query (SELECT only)
+	def query(self, columns, table, where, limit=1):
+		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, where, limit)
 		# return the first matching record if it exists, else None
 		resp = self.sf.query(query_string)
 		if (resp.get('totalSize') > 0):
