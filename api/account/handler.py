@@ -3,9 +3,16 @@ functions = Microservice() # a global instantiation of the boto lambda abstracti
 
 def account(event, context):
 	try:
-		# Get the Salesforce Credentials
+		# Get the Salesforce Credentials & add to query payload
 		credentials = Credentials(event.get('body').get('id'))
-		response = credentials.__dict__
+		query_payload = credentials.__dict__
+		# Get the first record
+		query_payload['sf_object_id'] = 'Contact'
+		query_payload['sf_field_id'] = 'Email'
+		query_payload['sf_field_value'] = 'hgoddard@saasli.com'
+		query_payload['sf_select_fields'] = ['Id', 'Name']
+		response = functions.request('salesforce-rest-dev-get', query_payload)
+		print response
 	except:
 		response = {'Error' : 'Invalid Parameters'}
 	return response
