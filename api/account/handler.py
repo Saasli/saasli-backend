@@ -19,3 +19,6 @@ def account(event, context):
 	except:
 		response = {'Error' : 'Invalid Parameters'}
 	return response
+
+def accounts(event, context):
+	return {'Message' : 'Unimplemented'}

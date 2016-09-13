@@ -11,19 +11,25 @@
 #
 # Happy Coding!
 
-service: account # NOTE: update this with your service name
+service: contact # NOTE: update this with your service name
 
 provider:
   name: aws
   runtime: python2.7
 # you can add statements to the Lambda function's IAM Role here
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - lambda:GetFunction
-        - lambda:InvokeAsync
-        - lambda:InvokeFunction
-      Resource: arn:aws:lambda:* #let this guy call all the lambda
+#  iamRoleStatements:
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:ListBucket"
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:PutObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "Ref" : "ServerlessDeploymentBucket"
 
 # you can overwrite defaults here
 #defaults:
@@ -31,28 +37,19 @@ provider:
 #  region: us-east-1
 
 # you can add packaging information here
-package:
-  exclude:
-    - venv
-    - requirements.txt 
-  include:
-    - site-packages
-
-
+#package:
+#  include:
+#    - include-me.js
+#  exclude:
+#    - exclude-me.js
+#  artifact: my-service-code.zip
 
 functions:
-  account:
-    handler: handler.account
-    events:
-      - http:
-          method: post
-          path: account
-  accounts:
-    handler: handler.accounts
-    events:
-      - http:
-          method: post
-          path: accounts
+  contact:
+    handler: handler.contact
+  contacts:
+    handler: handler.contact
+
 #   you can add any of the following events
 #    events:
 #      - http:
