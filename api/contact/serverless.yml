@@ -17,19 +17,13 @@ provider:
   name: aws
   runtime: python2.7
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:GetFunction
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+      Resource: arn:aws:lambda:* #let this guy call all the lambda
 
 # you can overwrite defaults here
 #defaults:
@@ -47,8 +41,16 @@ provider:
 functions:
   contact:
     handler: handler.contact
+    events:
+      - http:
+          method: post
+          path: contact
   contacts:
-    handler: handler.contact
+    handler: handler.contacts
+    events:
+      - http:
+          method: post
+          path: contacts
 
 #   you can add any of the following events
 #    events:
