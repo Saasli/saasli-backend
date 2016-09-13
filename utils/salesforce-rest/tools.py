@@ -6,16 +6,13 @@ import json
 class SalesforceClient(object):
 	#grants a sf client if authorization is successful
 	def __init__(self, username, password, token):
-		try:
-			self.sf = Salesforce(
-				username=username, 
-				password=password, 
-				security_token=token
-			)
-			self.session_id = self.sf.session_id
-			self.sf_instance = self.sf.sf_instance
-		except:
-			print "Salesforce Auth Failed for: %s" % username
+		self.sf = Salesforce(
+			username=username, 
+			password=password, 
+			security_token=token
+		)
+		self.session_id = self.sf.session_id
+		self.sf_instance = self.sf.sf_instance
 
 	#little tool to turn an array into a field query string
 	def stringify(self, array):
@@ -26,15 +23,11 @@ class SalesforceClient(object):
 
 	#perform a sf query
 	def query(self, query_string):
-		try:
-			# return the first matching record if it exists, else None
-			resp = self.sf.query(query_string)
-			if (resp.get('totalSize') > 0):
-				return resp.get('records')[0]
-			else:
-				return None
-		except:
-			print "Salesforce Query Failed: %s" % query_string
+		# return the first matching record if it exists, else None
+		resp = self.sf.query(query_string)
+		if (resp.get('totalSize') > 0):
+			return resp.get('records')[0]
+		else:
 			return None
 
 	#create a new record of type 'object' with values of type dict
