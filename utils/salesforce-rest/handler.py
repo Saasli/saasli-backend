@@ -36,14 +36,18 @@ def get(payload, context):
 	sf = SalesforceClient(payload.get('username'), payload.get('password'), payload.get('token'))
 	if sf is not None:
 		# build the query
+		print payload.get('sf_select_fields')
+		print sf.stringify(payload.get('sf_select_fields'))
 		query_string = "SELECT %s FROM %s WHERE %s = '%s' LIMIT 1" % (
-			stringify(payload.get('sf_select_fields')),
+			sf.stringify(payload.get('sf_select_fields')),
 			payload.get('sf_object_id'), 
 			payload.get('sf_field_id'), 
 			payload.get('sf_field_value')
 		)
-		#print sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
-		return sf.query(query_string)
+		print query_string
+		resp = sf.query(query_string)
+		print resp
+		return resp
 	else:
 		return None
 
@@ -82,13 +86,17 @@ def put(payload, context):
 		)
 		exists = sf.query(query_string)
 		if exists is not None: #do an update if it exists
-			updated = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
-			print "%s Exists, updated %s" % (payload.get('sf_field_value'), exists.get('Id'))
-			return {"Id" : exists.get('Id'), "Method" : "Update"}
+			try:
+				update_result = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
+				return {"Updated" : exists.get('Id')}
+			except Exception, e:
+				return {"Error" : e.content}
 		else: #create it if not
-			created = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
-			print "%s Does Not Exist, created %s" % (payload.get('sf_field_value'), created.get('id'))
-			return {"Id" : created.get('id'), "Method" : "Create"}
+			try:
+				create_result = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
+				return {"Created" : create_result}
+			except Exception, e:
+				return {"Error" : e.content}
 	else:
 		return None
 
@@ -98,10 +106,11 @@ def put(payload, context):
 # 	"password" : "salesforce3",
 # 	"token" : "5ZcOVNre0phV49496kGlhuWw",
 # 	"sf_object_id" : "Contact",
-# 	"sf_field_id" : "Email",
-# 	"sf_field_value" : "hgoddard+new@saasli.com",
+# 	"sf_field_id" : "Phone",
+# 	"sf_field_value" : "123-456-7890",
 # 	"sf_values" : {
-# 		"Email" : "hgoddard+new@saasli.com",
-# 		"LastName" : "Hank88"
+# 		"FirstName" : "Henry",
+# 		"LastName" : "Hank88",
+# 		"AccountId" : "0011a00000XFmhBAAT"
 # 	}
 # }, None)
