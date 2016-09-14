@@ -101,7 +101,7 @@ def put(payload, context):
 	# Query
 	try:
 		exists = sf.query(
-			'Id',
+			['Id'],
 			payload.get('sf_object_id'),
 			"%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
 		)
