@@ -8,16 +8,16 @@ def account(event, context):
 	try:
 		# Get the Salesforce Credentials & add to query payload
 		credentials = Credentials(body.get('client_id'))
-		account_payload = credentials.__dict__
+		credentials.__dict__.update({
+			'sf_object_id' : 'Account' #hardcoded by virtue of endpoint being Account
+			'sf_field_id' : body['sf_field_id']
+			'sf_field_value' : body['sf_field_value']
+			'sf_values' : body['sf_values']
+		})
 		# Get the first record
-		account_payload['sf_object_id'] = 'Account' #hardcoded by virtue of endpoint being Account
-		account_payload['sf_field_id'] = body.get('sf_field_id')
-		account_payload['sf_field_value'] = body.get('sf_field_value')
-		account_payload['sf_values'] = body.get('sf_values')
-		response = functions.request('salesforce-rest-dev-put', account_payload)
-		print response
-	except:
-		response = {'Error' : 'Invalid Parameters'}
+		response = functions.request('salesforce-rest-dev-put', credentials.__dict__)
+	except KeyError, e:
+		response = {'Error' : 'Invalid Parameters %s' % e}
 	return response
 
 def accounts(event, context):

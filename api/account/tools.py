@@ -36,7 +36,6 @@ class Credentials(object):
 			}
 			# Assign all the encrypted fields to class attributes
 			for key, value in json.loads(functions.request('kms-dev-decrypt', kmsPayload)).iteritems():
-				print ("KEY: %s VALUE: %s" % (key,value))
 				setattr(self, key, value)
 		except:
 			print 'No Such Client'
