@@ -9,9 +9,9 @@ def account(event, context):
 		# Get the Salesforce Credentials & add to query payload
 		credentials = Credentials(body.get('client_id'))
 		credentials.__dict__.update({
-			'sf_object_id' : 'Account' #hardcoded by virtue of endpoint being Account
-			'sf_field_id' : body['sf_field_id']
-			'sf_field_value' : body['sf_field_value']
+			'sf_object_id' : 'Account', #hardcoded by virtue of endpoint being Account
+			'sf_field_id' : body['sf_field_id'],
+			'sf_field_value' : body['sf_field_value'],
 			'sf_values' : body['sf_values']
 		})
 		# Get the first record
