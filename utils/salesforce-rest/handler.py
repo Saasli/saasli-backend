@@ -33,6 +33,7 @@ from tools import SalesforceClient
 ######
 
 def get(payload, context):
+	print payload
 	# Auth
 	try:
 		sf = SalesforceClient(
@@ -44,6 +45,8 @@ def get(payload, context):
 		return {'Error' : e.__dict__}
 	# Query
 	try:
+		print "Payload:"
+		print payload
 		return sf.query(
 			payload.get('sf_select_fields'),
 			payload.get('sf_object_id'),
@@ -114,7 +117,7 @@ def put(payload, context):
 	else: #create it if not
 		try:
 			create_result = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
-			return {"Created" : create_result}
+			return {"Created" : create_result.get('id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
 
