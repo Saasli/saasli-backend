@@ -3,46 +3,48 @@ functions = Microservice() # a global instantiation of the boto lambda abstracti
 
 def contact(event, context):
 	body = event.get('body')
+	
+	# Decrypt Auth
 	try:
 		# Get the Salesforce Credentials & add to query payload
 		credentials = Credentials(body.get('client_id'))
-		account_payload = credentials.__dict__
+	except Exception, e:
+		return {'Error' : 'Unable to Retrieve Authenticate With Salesforce. Have your credentials change? If so please notify Saasli'}
 
-		# Get the Account Id
-		account_payload['sf_object_id'] = 'Account' #hardcoded to get the account
-		account_payload['sf_field_id'] = body.get('sf_account_field_id')
-		account_payload['sf_field_value'] = body.get('sf_account_field_value')
-		account_payload['sf_select_fields'] = ["Id"] # only interested in the Id
-		account = functions.request('salesforce-rest-dev-get', account_payload)
-	except:
-		return {'Error' : 'Unable to Retrieve Account'}
+	# Get the Account Id
 	try:
-		if account is not None:
-			# Add the Account Id to the sf_values
-			contact_payload = credentials.__dict__ #instantiate a contact upsert payload
-			contact_payload['sf_object_id'] = 'Contact'
-			contact_payload['sf_field_id'] = body.get('sf_field_id')
-			contact_payload['sf_field_value'] = body.get('sf_field_value')
-			
-			contact_values = body.get('sf_values')
-			contact_values['AccountId'] = account.get('Id') #include the AccountId as a sf_value
-			contact_payload['sf_values'] = contact_values
-			print contact_payload
-		else:
-			print "Nothing"
-			#Do Something about no Account
-	except:
-		return {'Error' : 'Unable to Set Contact Values'}
-	try:
-		# Put the contact record
-		contact_payload['sf_object_id'] = 'Contact' #hardcoded to access the contact
-		contact_payload['sf_field_id'] = body.get('sf_field_id')
-		contact_payload['sf_field_value'] = body.get('sf_field_value')
-		response = functions.request('salesforce-rest-dev-put', contact_payload)
-		return response
-	except:
-		return {'Error' : 'Unable to Upsert the Contact'}
+		credentials.__dict__.update({
+			'sf_object_id' : 'Account', #hardcoded to get the account
+			'sf_field_id' : body['sf_account_field_id'],
+			'sf_field_value' : body['sf_account_field_value'],
+			'sf_select_fields' : ['Id'] # only interested in the Id
+		})
+		account = functions.request('salesforce-rest-dev-get', credentials.__dict__)
+	except KeyError, e:
+		return {'Error' : 'Missing Parameter: %s' % e}
 	
+	# Build the contact upsertion payload	
+	try:
+		if account.get('Id') is not None:
+			body['sf_values'].update({'AccountId' : account['Id']})
+		#else:
+			# Do Something about no Account
+			# a) 'Put' it in SF
+			# b) Inform the user of failure
+			# c) create conditionally on a checkbox exposed in API
+		credentials.__dict__.update({
+			'sf_object_id' : 'Contact',
+			'sf_field_id' : body['sf_field_id'],
+			'sf_field_value' : body['sf_field_value'],
+			'sf_values' : body['sf_values']
+		})
+
+
+	except KeyError, e:
+		return {'Error' : 'Missing Parameter: %s' % e}
+	
+	# Upsert the contact record
+	return functions.request('salesforce-rest-dev-put', credentials.__dict__)
 
 def contacts(event, context):
 	return { "message": "Go Serverless v1.0! Your function executed successfully!", "event": event }
