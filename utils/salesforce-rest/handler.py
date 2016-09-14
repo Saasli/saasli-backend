@@ -111,13 +111,13 @@ def put(payload, context):
 	if exists is not None: #do an update if it exists
 		try:
 			update_result = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
-			return {"Updated" : exists.get('Id')}
+			return {"Method" : "Update", "Id" : exists.get('Id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
 	else: #create it if not
 		try:
 			create_result = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
-			return {"Created" : create_result.get('id')}
+			return {"Method" : "Create", "Id" : create_result.get('id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
 
