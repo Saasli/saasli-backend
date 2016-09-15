@@ -30,6 +30,12 @@ provider:
 #          - - "arn:aws:s3:::"
 #            - "Ref" : "ServerlessDeploymentBucket"
 
+package:
+  include:
+    - venv/lib/python2.7/site-packages
+  exclude:
+    - venv
+
 # you can overwrite defaults here
 #defaults:
 #  stage: dev
