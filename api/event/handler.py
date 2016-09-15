@@ -55,7 +55,7 @@ def event(event, context):
 		print event.get('Id')
 		#build the event sf_values
 		sf_values = {
-			#'Contact__c' : body['sf_field_value'], #TODO Make this bitch polymorphic
+			body['sf_object_id'] + '__c' : record.get('Id'), #polymorphic relating id
 			'User_Usage_History_Event_Type__c' : event['Id'],
 			'Event_Date_Created_UNIX__c' : body['event']['logged_at'],
 			'Saasli_Event_Id__c' : generate_hash( record['Id'], body['event']['logged_at']) #TODO Fix #15 so we don't need to do this

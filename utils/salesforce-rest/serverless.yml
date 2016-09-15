@@ -12,7 +12,6 @@
 # Happy Coding!
 
 service: salesforce-rest # NOTE: update this with your service name
-
 provider:
   name: aws
   runtime: python2.7
