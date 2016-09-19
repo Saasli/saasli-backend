@@ -22,7 +22,6 @@ def contact(event, context):
 		account = functions.request('salesforce-rest-dev-get', credentials.__dict__)
 	except KeyError, e:
 		return {'Error' : 'Missing Parameter: %s' % e}
-	
 	# Build the contact upsertion payload	
 	try:
 		if account.get('Id') is not None:
@@ -36,7 +35,8 @@ def contact(event, context):
 			'sf_object_id' : 'Contact',
 			'sf_field_id' : body['sf_field_id'],
 			'sf_field_value' : body['sf_field_value'],
-			'sf_values' : body['sf_values']
+			'sf_values' : body['sf_values'],
+			'sf_account_id' : account['Id']
 		})
 
 

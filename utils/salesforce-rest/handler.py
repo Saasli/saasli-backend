@@ -100,10 +100,21 @@ def put(payload, context):
 		return {'Error' : e.__dict__}
 	# Query
 	try:
+		#generate where clause
+		where = "%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
+		# in the case of a contact, make sure their accountid is considered, and only update those who match
+		if payload.get('sf_object_id') == 'Contact':
+			try:
+				where += " AND AccountId = '%s'" % payload['sf_account_id'] #pass this value in as sf_account_id
+				print "ADDING ACCOUNT TO WHERE %s" % where
+			except Exception, e:
+				return {"Error", "Account Id invalid"}
+
+		#execute the query
 		exists = sf.query(
 			['Id'],
 			payload.get('sf_object_id'),
-			"%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
+			where
 		)
 	except Exception, e:
 		return {'Error' : e.__dict__}
