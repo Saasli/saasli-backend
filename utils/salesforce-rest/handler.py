@@ -127,7 +127,14 @@ def put(payload, context):
 			return {"Error" : e.__dict__}
 	else: #create it if not
 		try:
-			create_result = sf.create(payload.get('sf_object_id'), payload.get('sf_values'))
+			#add the identifying key/value pair as a value upon creation (unless it's the Record Id... don't do that)
+			values = payload.get('sf_values')
+			if payload.get('sf_field_id') is not "Id":
+				values.update({
+					payload.get('sf_field_id') : payload.get('sf_field_value')
+				})
+
+			create_result = sf.create(payload.get('sf_object_id'), values)
 			return {"Method" : "Create", "Id" : create_result.get('id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
