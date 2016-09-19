@@ -9,6 +9,9 @@ def account(event, context):
 		# Get the Salesforce Credentials & add to query payload
 		credentials = Credentials(body.get('client_id'))
 
+		if credentials is None:
+			return {"Error: " : "Invalid Client Id"}
+			
 		credentials.__dict__.update({
 			'sf_object_id' : 'Account', #hardcoded by virtue of endpoint being Account
 			'sf_field_id' : body['sf_field_id'],
