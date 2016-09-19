@@ -24,6 +24,7 @@ class SalesforceClient(object):
 	#perform a sf query (SELECT only)
 	def query(self, columns, table, where, limit=1):
 		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, where, limit)
+		print ("QS: %s" % query_string)
 		# return the first matching record if it exists, else None
 		resp = self.sf.query(query_string)
 		if (resp.get('totalSize') > 0):

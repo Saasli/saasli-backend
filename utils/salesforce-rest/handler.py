@@ -89,6 +89,7 @@ def get(payload, context):
 #
 ######
 def put(payload, context):
+	print "put"
 	# Auth
 	try:
 		sf = SalesforceClient(
@@ -133,13 +134,14 @@ def put(payload, context):
 			return {"Error" : e.__dict__}
 
 # # For Local Testing Purposes
-# put({
+# print put({
 # 	"username" : "mc@tts.demo",
 # 	"password" : "salesforce3",
 # 	"token" : "5ZcOVNre0phV49496kGlhuWw",
 # 	"sf_object_id" : "Contact",
-# 	"sf_field_id" : "Phone",
-# 	"sf_field_value" : "123-456-7890",
+# 	"sf_field_id" : "Email",
+# 	"sf_field_value" : "h4nk@saasli.com",
+# 	"sf_account_id" : "0011a00000Lad2oAAB",
 # 	"sf_values" : {
 # 		"FirstName" : "Henry",
 # 		"LastName" : "Hank88",
