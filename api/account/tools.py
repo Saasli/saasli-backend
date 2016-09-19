@@ -30,6 +30,7 @@ class Credentials(object):
 				'tablename' : 'clients'
 			}
 			encryptedCredentials = functions.request('dynamodb-dev-getitem', dynamoPayload)
+
 			# Decrypt the client credentials
 			kmsPayload = { 
 				'cipher' : encryptedCredentials.get('credentials').get('S')
