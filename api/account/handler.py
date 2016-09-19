@@ -12,7 +12,7 @@ def account(event, context):
 			'sf_object_id' : 'Account', #hardcoded by virtue of endpoint being Account
 			'sf_field_id' : body['sf_field_id'],
 			'sf_field_value' : body['sf_field_value'],
-			'sf_values' : body['sf_values']
+			'sf_values' : body['account']
 		})
 		# Get the first record
 		response = functions.request('salesforce-rest-dev-put', credentials.__dict__)
