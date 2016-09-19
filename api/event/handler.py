@@ -38,9 +38,9 @@ def event(event, context):
 		credentials.__dict__.update({
 			'sf_object_id' : 'User_Usage_History_Event_Type__c', #hardcoded to get the account
 			'sf_field_id' : 'Name',
-			'sf_field_value' : body['event']['name'],
+			'sf_field_value' : body['event']['event_name'],
 			'sf_values' : {
-				'Name' : body['event']['name']  #TODO Fix #15 so we don't need to do this
+				'Name' : body['event']['event_name']  #TODO Fix #15 so we don't need to do this
 			},
 			'sf_select_fields' : ['Id'] # only interested in the Id
 		})
@@ -57,14 +57,14 @@ def event(event, context):
 		sf_values = {
 			body['sf_object_id'] + '__c' : record.get('Id'), #polymorphic relating id
 			'User_Usage_History_Event_Type__c' : event['Id'],
-			'Event_Date_Created_UNIX__c' : body['event']['logged_at'],
-			'Saasli_Event_Id__c' : generate_hash( record['Id'], body['event']['logged_at']) #TODO Fix #15 so we don't need to do this
+			'Event_Date_Created_UNIX__c' : body['event']['event_timestamp'],
+			'Saasli_Event_Id__c' : generate_hash( record['Id'], body['event']['event_timestamp']) #TODO Fix #15 so we don't need to do this
 		}
 
 		credentials.__dict__.update({
 			'sf_object_id' : 'User_Usage_History__c', #hardcoded to put the User_Usage_History__c
 			'sf_field_id' : 'Saasli_Event_Id__c',
-			'sf_field_value' : generate_hash( record['Id'], body['event']['logged_at']),
+			'sf_field_value' : generate_hash( record['Id'], body['event']['event_timestamp']),
 			'sf_values' : sf_values
 		})
 	except KeyError, e:
