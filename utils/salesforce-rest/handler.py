@@ -145,13 +145,10 @@ def put(payload, context):
 # 	"username" : "mc@tts.demo",
 # 	"password" : "salesforce3",
 # 	"token" : "5ZcOVNre0phV49496kGlhuWw",
-# 	"sf_object_id" : "Contact",
-# 	"sf_field_id" : "Email",
-# 	"sf_field_value" : "h4nk@saasli.com",
-# 	"sf_account_id" : "0011a00000Lad2oAAB",
+# 	"sf_object_id" : "Account",
+# 	"sf_field_id" : "Name",
+# 	"sf_field_value" : "Test Update Identifying",
 # 	"sf_values" : {
-# 		"FirstName" : "Henry",
-# 		"LastName" : "Hank88",
-# 		"AccountId" : "0011a00000XFmhBAAT"
+# 		"Phone" : "1800GOTJUNK"
 # 	}
 # }, None)
