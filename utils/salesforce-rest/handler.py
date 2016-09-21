@@ -36,22 +36,29 @@ def get(payload, context):
 	print payload
 	# Auth
 	try:
+		print "b4 sf"
 		sf = SalesforceClient(
 				payload.get('username'), 
 				payload.get('password'), 
 				payload.get('token')
 			)
+		print "after sf"
 	except Exception, e:
 		return {'Error' : e.__dict__}
 	# Query
 	try:
-		print "Payload:"
-		print payload
+		print "b4 q"
+		where = [{
+			"a" : payload.get('sf_field_id'),
+			"op" : "=",
+			"b" : payload.get('sf_field_value')
+		}]
 		return sf.query(
 			payload.get('sf_select_fields'),
 			payload.get('sf_object_id'),
-			"%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
+			where
 		)
+		print "after q"
 	except Exception, e:
 		return {"Error" : e.__dict__}
 
@@ -102,11 +109,20 @@ def put(payload, context):
 	# Query
 	try:
 		#generate where clause
-		where = "%s = '%s'" % (payload.get('sf_field_id'), payload.get('sf_field_value'))
+		where = [{
+			"a" : payload.get('sf_field_id'),
+			"op" : "=",
+			"b" : payload.get('sf_field_value')
+		}]
 		# in the case of a contact, make sure their accountid is considered, and only update those who match
 		if payload.get('sf_object_id') == 'Contact':
 			try:
-				where += " AND AccountId = '%s'" % payload['sf_account_id'] #pass this value in as sf_account_id
+				where.append({
+					"a" : "AccountId",
+					"op" : "=",
+					"b" : payload['sf_account_id']
+				})
+				#where += " AND AccountId = '%s'" % payload['sf_account_id'] #pass this value in as sf_account_id
 				print "ADDING ACCOUNT TO WHERE %s" % where
 			except Exception, e:
 				return {"Error", "Account Id invalid"}
@@ -139,16 +155,3 @@ def put(payload, context):
 			return {"Method" : "Create", "Id" : create_result.get('id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
-
-# # For Local Testing Purposes
-# print put({
-# 	"username" : "mc@tts.demo",
-# 	"password" : "salesforce3",
-# 	"token" : "5ZcOVNre0phV49496kGlhuWw",
-# 	"sf_object_id" : "Account",
-# 	"sf_field_id" : "Name",
-# 	"sf_field_value" : "Test Update Identifying",
-# 	"sf_values" : {
-# 		"Phone" : "1800GOTJUNK"
-# 	}
-# }, None)
