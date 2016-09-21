@@ -3,6 +3,52 @@ sys.path.insert(0, './venv/lib/python2.7/site-packages/') #TODO: Keep an eye out
 from simple_salesforce import Salesforce, SFType
 import json
 
+
+#a local representation of the SF Client's Object
+class SalesforceObject(object):
+	def __init__(self, object, session_id, sf_instance):
+		self.sf_type = SFType(object, session_id, sf_instance)
+		self.description = self.sf_type.describe()
+		self.fields = self.description['fields']
+		self.typemap = {
+			'address' : True,
+			'anyType' : True,
+			'boolean' : True,
+			'calculated' : True,
+			'combobox' : True,
+			'currency' : False,
+			'double' : False,
+			'DataCategoryGroupReference' : True,
+			'email' : True,
+			'encryptedstring' : True,
+			'id' : True,
+			'JunctionIdList' : True,
+			'location' : True,
+			'masterrecord' : True,
+			'multipicklist' : True,
+			'percent' : False,
+			'phone' : True,
+			'picklist' : True,
+			'reference' : True,
+			'string' : True,
+			'textarea' : True,
+			'url' : True,
+		} # True -> Do put quotes
+		# False -> Do not put quotes
+
+	def getFieldType(self, fieldname):
+		x = [fields['type'] for fields in self.fields if fields['name'] == fieldname][0]
+		print x
+		return x
+
+	def formatFieldType(self, fieldname, value):
+		if self.typemap.get(self.getFieldType(fieldname)):
+			return "'%s'" % value
+		else:
+			return "%s" % value
+
+
+
 class SalesforceClient(object):
 	#grants a sf client if authorization is successful
 	def __init__(self, username, password, token):
