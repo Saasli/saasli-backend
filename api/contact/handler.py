@@ -5,11 +5,10 @@ def contact(event, context):
 	body = event.get('body')
 	
 	# Decrypt Auth
-	try:
-		# Get the Salesforce Credentials & add to query payload
-		credentials = Credentials(body.get('client_id'))
-	except Exception, e:
-		return {'Error' : 'Unable to Retrieve Authenticate With Salesforce. Have your credentials change? If so please notify Saasli'}
+	credentials = Credentials(body.get('client_id'))
+	
+	if not hasattr(credentials, 'username'):
+		return {'Error' : 'Unable to find client id'}
 
 	# Get the Account Id
 	try:
