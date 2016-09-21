@@ -67,6 +67,17 @@ class SalesforceClient(object):
 			out += ", %s" % item
 		return out[1:] #greasy skip the first comma
 
+
+	#little tool to turn a where dict in to a properly formatted where string in a query string
+	def whereify(self, array, object):
+		print array
+		recordType = SalesforceObject(object, self.session_id, self.sf_instance)
+		out = ""
+		for clause in array:
+			out += "AND %s %s %s " % (clause['a'], clause['op'], recordType.formatFieldType(clause['a'], clause['b']))
+		return out[4:] #greasy first AND skip
+
+
 	#perform a sf query (SELECT only)
 	# where is an array of dicts where each dict contains the left and right terms as well as the operation between the two
 	# e.g. 
@@ -76,7 +87,8 @@ class SalesforceClient(object):
 	#  op : '='
 	# }
 	def query(self, columns, table, where, limit=1):
-		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, where, limit)
+		print where
+		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, self.whereify(where, table), limit)
 		print ("QS: %s" % query_string)
 		# return the first matching record if it exists, else None
 		resp = self.sf.query(query_string)
