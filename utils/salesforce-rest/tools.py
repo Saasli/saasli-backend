@@ -13,15 +13,20 @@ class SalesforceObject(object):
 		self.typemap = {
 			'address' : True,
 			'anyType' : True,
-			'boolean' : True,
+			'base64' : True, #prim
+			'boolean' : False, #prim
+			'byte' : True, #prim
 			'calculated' : True,
 			'combobox' : True,
 			'currency' : False,
-			'double' : False,
+			'date' : True, #prim
+			'dateTime' : True, #prim
+			'double' : False, #prim
 			'DataCategoryGroupReference' : True,
 			'email' : True,
 			'encryptedstring' : True,
 			'id' : True,
+			'int' : False, #prim
 			'JunctionIdList' : True,
 			'location' : True,
 			'masterrecord' : True,
@@ -30,17 +35,20 @@ class SalesforceObject(object):
 			'phone' : True,
 			'picklist' : True,
 			'reference' : True,
-			'string' : True,
+			'string' : True, #prim
 			'textarea' : True,
+			'time' : True,
 			'url' : True,
 		} # True -> Do put quotes
 		# False -> Do not put quotes
+		#https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/primitive_data_types.htm
 
+	#iterate through the object description and return the primitive type of the field in question
 	def getFieldType(self, fieldname):
-		x = [fields['type'] for fields in self.fields if fields['name'] == fieldname][0]
-		print x
-		return x
+		return [fields['type'] for fields in self.fields if fields['name'] == fieldname][0]
 
+
+	#appropriately place a value in quotes or not in quotes depending on it's primitive type
 	def formatFieldType(self, fieldname, value):
 		if self.typemap.get(self.getFieldType(fieldname)):
 			return "'%s'" % value
@@ -70,7 +78,6 @@ class SalesforceClient(object):
 
 	#little tool to turn a where dict in to a properly formatted where string in a query string
 	def whereify(self, array, object):
-		print array
 		recordType = SalesforceObject(object, self.session_id, self.sf_instance)
 		out = ""
 		for clause in array:
@@ -87,9 +94,7 @@ class SalesforceClient(object):
 	#  op : '='
 	# }
 	def query(self, columns, table, where, limit=1):
-		print where
 		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, self.whereify(where, table), limit)
-		print ("QS: %s" % query_string)
 		# return the first matching record if it exists, else None
 		resp = self.sf.query(query_string)
 		if (resp.get('totalSize') > 0):
