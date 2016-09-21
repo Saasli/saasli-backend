@@ -22,6 +22,13 @@ class SalesforceClient(object):
 		return out[1:] #greasy skip the first comma
 
 	#perform a sf query (SELECT only)
+	# where is an array of dicts where each dict contains the left and right terms as well as the operation between the two
+	# e.g. 
+	# {
+	#   a : 'Id',
+	#   b : 'WxThsThdDUs000AAT',
+	#  op : '='
+	# }
 	def query(self, columns, table, where, limit=1):
 		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, where, limit)
 		print ("QS: %s" % query_string)
