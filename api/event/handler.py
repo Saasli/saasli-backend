@@ -1,6 +1,5 @@
 import hashlib
 from tools import Microservice, Credentials
-functions = Microservice() # a global instantiation of the boto lambda abstraction
 
 def generate_hash(identifier_sf_id, logged_at):
 	join = str(identifier_sf_id) + str(logged_at)
@@ -8,9 +7,10 @@ def generate_hash(identifier_sf_id, logged_at):
 	return hash.hexdigest()
 
 def event(event, context):
+	functions = Microservice(context.function_name)
 	body = event.get('body')
 	# Decrypt Auth
-	credentials = Credentials(body.get('client_id'))
+	credentials = Credentials(body.get('client_id'), functions)
 	
 	if not hasattr(credentials, 'username'):
 		return {'Error' : 'Unable to find client id'}
@@ -23,7 +23,7 @@ def event(event, context):
 			'sf_field_value' : body['sf_field_value'],
 			'sf_select_fields' : ['Id'] # only interested in the Id
 		})
-		record = functions.request('salesforce-rest-dev-get', credentials.__dict__)
+		record = functions.request('salesforce-rest', 'get', credentials.__dict__)
 	except KeyError, e:
 		return {'Error' : 'Missing Parameter: %s' % e}
 
@@ -43,7 +43,7 @@ def event(event, context):
 			},
 			'sf_select_fields' : ['Id'] # only interested in the Id
 		})
-		event = functions.request('salesforce-rest-dev-put', credentials.__dict__)
+		event = functions.request('salesforce-rest','put', credentials.__dict__)
 	except KeyError, e:
 		return {'Error' : 'Missing Parameter: %s' % e}
 
@@ -70,7 +70,7 @@ def event(event, context):
 		return {'Error' : 'Missing Parameter: %s' % e}
 	
 	# Upsert the event record
-	return functions.request('salesforce-rest-dev-put', credentials.__dict__)
+	return functions.request('salesforce-rest', 'put', credentials.__dict__)
 
 def events(event, context):
 	return {'Message' : 'Unimplemented'}
