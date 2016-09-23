@@ -31,7 +31,13 @@ pip install virtualenv
 - *function* : Within each service are functions. For example beneath the `/account` service we have `accounts` and `account`.
 
 
-###Developing a Service
+##Developing a Service
+
+### Naming Convention
+
+Serverless names services with the following scheme {service_name}-{stage}-{function_name}. We strip the name of the stage out assuming this convention so it's imparative that service names, stage names and function names only contain alphanumeric characters. 
+
+### Virtual Environments
 
 Serverless upon deployment will zip up everything it it's directory. Then, when live on Lambda it will only have access to anything in that zip. This is a problem if your code needs some python libraries because beyond a few pretty generic ones like `boto3`, none are included. To get around that, and have only files required for a given service be zipped, we use virtual environments. 
 
