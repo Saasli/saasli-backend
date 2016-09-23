@@ -3,15 +3,18 @@ import boto3
 import json
 
 class Microservice(object):
-	def __init__(self):
+	def __init__(self, function_name):
 		self.client = boto3.client('lambda')
+		self.version = function_name.split('-')[1] #grab the stage name from the function name
 
 	# Given the name of a lambda function (string) and 
-	# a dict containing the {key : value} parameters 
+	# a dict containing they {key : value} parameters 
 	# returns the response of the lambda function
-	def request(self, function, payload):
+	def request(self, service, function, payload):
+		function_name = "%s-%s-%s" % (service, self.version, function)
+		print function_name
 		return json.loads( self.client.invoke(
-			FunctionName=function,
+			FunctionName=function_name,
 			InvocationType='RequestResponse',
 			Payload=json.dumps(payload).encode()
 		)['Payload'].read())
@@ -20,22 +23,22 @@ class Microservice(object):
 #This class expects that stored in the 'credentials' attribute of the client 
 #is an encrypted base64 stringified piece of json.
 class Credentials(object):
-	def __init__(self, id):
+	def __init__(self, id, functions):
+		print functions
 		try:
-			functions = Microservice()
 			# Get the encrypted data for the client
 			dynamoPayload = {
 				'id' : id,
 				'key' : 'id',
 				'tablename' : 'clients'
 			}
-			encryptedCredentials = functions.request('dynamodb-dev-getitem', dynamoPayload)
+			encryptedCredentials = functions.request('dynamodb','getitem', dynamoPayload)
 			# Decrypt the client credentials
 			kmsPayload = { 
 				'cipher' : encryptedCredentials.get('credentials').get('S')
 			}
 			# Assign all the encrypted fields to class attributes
-			for key, value in json.loads(functions.request('kms-dev-decrypt', kmsPayload)).iteritems():
+			for key, value in json.loads(functions.request('kms','decrypt', kmsPayload)).iteritems():
 				setattr(self, key, value)
 		except:
 			print 'No Such Client'
