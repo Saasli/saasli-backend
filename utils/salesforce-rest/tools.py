@@ -59,11 +59,13 @@ class SalesforceObject(object):
 
 class SalesforceClient(object):
 	#grants a sf client if authorization is successful
-	def __init__(self, username, password, token):
+	def __init__(self, username, password, token, sandbox):
+		sandbox if sandbox else False
 		self.sf = Salesforce(
 			username=username, 
 			password=password, 
-			security_token=token
+			security_token=token,
+			sandbox=sandbox
 		)
 		self.session_id = self.sf.session_id
 		self.sf_instance = self.sf.sf_instance

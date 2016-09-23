@@ -40,7 +40,8 @@ def get(payload, context):
 		sf = SalesforceClient(
 				payload.get('username'), 
 				payload.get('password'), 
-				payload.get('token')
+				payload.get('token'),
+				payload.get('sandbox')
 			)
 		print "after sf"
 	except Exception, e:
@@ -102,7 +103,8 @@ def put(payload, context):
 		sf = SalesforceClient(
 				payload.get('username'), 
 				payload.get('password'), 
-				payload.get('token')
+				payload.get('token'),
+				payload.get('sandbox')
 			)
 	except Exception, e:
 		return {'Error' : e.__dict__}
