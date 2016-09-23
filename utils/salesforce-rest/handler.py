@@ -33,22 +33,18 @@ from tools import SalesforceClient
 ######
 
 def get(payload, context):
-	print payload
 	# Auth
 	try:
-		print "b4 sf"
 		sf = SalesforceClient(
 				payload.get('username'), 
 				payload.get('password'), 
 				payload.get('token'),
 				payload.get('sandbox')
 			)
-		print "after sf"
 	except Exception, e:
 		return {'Error' : e.__dict__}
 	# Query
 	try:
-		print "b4 q"
 		where = [{
 			"a" : payload.get('sf_field_id'),
 			"op" : "=",
@@ -59,7 +55,6 @@ def get(payload, context):
 			payload.get('sf_object_id'),
 			where
 		)
-		print "after q"
 	except Exception, e:
 		return {"Error" : e.__dict__}
 
@@ -97,7 +92,6 @@ def get(payload, context):
 #
 ######
 def put(payload, context):
-	print "put"
 	# Auth
 	try:
 		sf = SalesforceClient(
@@ -124,8 +118,6 @@ def put(payload, context):
 					"op" : "=",
 					"b" : payload['sf_account_id']
 				})
-				#where += " AND AccountId = '%s'" % payload['sf_account_id'] #pass this value in as sf_account_id
-				print "ADDING ACCOUNT TO WHERE %s" % where
 			except Exception, e:
 				return {"Error", "Account Id invalid"}
 
