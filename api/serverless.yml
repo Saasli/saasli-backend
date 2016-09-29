@@ -40,3 +40,33 @@ functions:
     package:
       include:
         - contact
+  encrypt:
+    handler: encryption/handler.encrypt
+    events:
+      - http:
+          path: encryption/encrypt
+          method: post
+          cors: 
+            origins: 
+              - '*'
+            headers:
+              - content-type
+              - x-api-key
+    package:
+      include:
+        - encryption
+  decrypt:
+    handler: encryption/handler.decrypt
+    events:
+      - http:
+          path: encryption/decrypt
+          method: post
+          cors: 
+            origins: 
+              - '*'
+            headers:
+              - content-type
+              - x-api-key
+    package:
+      include:
+        - encryption

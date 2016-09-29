@@ -1,3 +1,5 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))) # we need to add the parent directory to the path so we can share tools.py
 from tools import Microservice
 
 def encrypt(event, context):
@@ -16,6 +18,7 @@ def encrypt(event, context):
 
 
 def decrypt(event, context):
+	functions = Microservice(context.function_name)
 	try:
 		print event
 		payload = { 
