@@ -2,6 +2,7 @@
 import boto3
 import json
 
+
 class Microservice(object):
 	def __init__(self, function_name):
 		self.client = boto3.client('lambda')

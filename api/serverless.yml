@@ -28,7 +28,7 @@ functions:
     events:
       - http:
           method: post
-          path: account
+          path: account/{account_field}
     package:
       include:
         - account
@@ -38,7 +38,7 @@ functions:
     events:
       - http:
           method: post
-          path: contact
+          path: contact/{account_field}/{contact_field}
     package:
       include:
         - contact
@@ -80,7 +80,7 @@ functions:
     events: #confusing, but this is the triggering events not the name of the endpoints
       - http:
           method: post
-          path: event
+          path: event/{object_field}
     package:
       include:
         - event
