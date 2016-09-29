@@ -70,3 +70,13 @@ functions:
     package:
       include:
         - encryption
+  event:
+    timeout: 15
+    handler: event/handler.event
+    events: #confusing, but this is the triggering events not the name of the endpoints
+      - http:
+          method: post
+          path: event
+    package:
+      include:
+        - event

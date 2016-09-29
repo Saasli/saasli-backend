@@ -1,4 +1,5 @@
-import hashlib
+import sys, os, copy, hashlib
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))) # we need to add the parent directory to the path so we can share tools.py
 from tools import Microservice, Credentials
 
 def generate_hash(identifier_sf_id, logged_at):
