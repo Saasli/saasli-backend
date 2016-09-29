@@ -1,4 +1,4 @@
-service: api # NOTE: update this with your service name
+service: api
 
 provider:
   name: aws
@@ -22,6 +22,7 @@ package:
 
 # Functions
 functions:
+  # Account
   account:
     handler: account/handler.account
     events:
@@ -31,6 +32,7 @@ functions:
     package:
       include:
         - account
+  # Contact
   contact:
     handler: contact/handler.contact
     events:
@@ -40,6 +42,7 @@ functions:
     package:
       include:
         - contact
+  # Encryption
   encrypt:
     handler: encryption/handler.encrypt
     events:
@@ -70,6 +73,7 @@ functions:
     package:
       include:
         - encryption
+  # Event
   event:
     timeout: 15
     handler: event/handler.event

@@ -12,7 +12,6 @@ class Microservice(object):
 	# returns the response of the lambda function
 	def request(self, service, function, payload):
 		function_name = "%s-%s-%s" % (service, self.version, function)
-		print function_name
 		return json.loads( self.client.invoke(
 			FunctionName=function_name,
 			InvocationType='RequestResponse',
@@ -24,7 +23,6 @@ class Microservice(object):
 #is an encrypted base64 stringified piece of json.
 class Credentials(object):
 	def __init__(self, id, functions):
-		print functions
 		try:
 			# Get the encrypted data for the client
 			dynamoPayload = {
