@@ -29,7 +29,7 @@ def event(event, context):
 		return {'Error' : 'Missing Parameter: %s' % e}
 
 	# Handler No Triggering Object Id
-	if record.get('Id') is None: #No triggering object found
+	if record is None: #No triggering object found
 		#What do we do here?
 		return { "Error" : "No Such Triggering Object Found: %s" %  body['sf_field_value']}
 	
