@@ -1,0 +1,33 @@
+service: api # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: python2.7
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:GetFunction
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+      Resource: arn:aws:lambda:* #let this guy call all the lambda
+
+# Packaging
+package:
+  individually: true
+  exclude: # Globally exclude all the submodules, each function will include their own
+    - account
+    - contact
+    - encryption
+    - event
+
+# Functions
+functions:
+  account:
+    handler: account/handler.account
+    events:
+      - http:
+          method: post
+          path: account
+    package:
+      include:
+        - account
