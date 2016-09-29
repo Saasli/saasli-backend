@@ -1,7 +1,5 @@
-import sys, os
+import sys, os, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))) # we need to add the parent directory to the path so we can share tools.py
-
-import copy
 from tools import Microservice, Credentials
 
 #Expecting a payload as defined here: https://saasli.github.io/docs/#account

@@ -31,3 +31,12 @@ functions:
     package:
       include:
         - account
+  contact:
+    handler: contact/handler.contact
+    events:
+      - http:
+          method: post
+          path: contact
+    package:
+      include:
+        - contact
