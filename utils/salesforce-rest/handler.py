@@ -118,6 +118,9 @@ def put(payload, context):
 					"op" : "=",
 					"b" : payload['sf_account_id']
 				})
+				payload.get('sf_values').update({
+					"AccountId" : payload['sf_account_id']
+				}) #Also add the account id to the update
 			except Exception, e:
 				return {"Error", "Account Id invalid"}
 
@@ -132,6 +135,7 @@ def put(payload, context):
 	# Upsert
 	if exists is not None: #do an update if it exists
 		try:
+			payload.get('sf_values').pop('Id', None) #get rid of the Id as you can't update it
 			update_result = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
 			return {"Method" : "Update", "Id" : exists.get('Id')}
 		except Exception, e:
@@ -140,11 +144,7 @@ def put(payload, context):
 		try:
 			#add the identifying key/value pair as a value upon creation (unless it's the Record Id... don't do that)
 			values = payload.get('sf_values')
-			if payload.get('sf_field_id') is not "Id":
-				values.update({
-					payload.get('sf_field_id') : payload.get('sf_field_value')
-				})
-
+			values.pop('Id', None)
 			create_result = sf.create(payload.get('sf_object_id'), values)
 			return {"Method" : "Create", "Id" : create_result.get('id')}
 		except Exception, e:

@@ -41,3 +41,20 @@ class Credentials(object):
 				setattr(self, key, value)
 		except:
 			print 'No Such Client'
+
+class Request(object):
+	def __init__(self, body, path):
+		# Assign all the body + path fields to class attributes
+		for key, value in body.iteritems():
+			setattr(self, key, value)
+		# Fish the identifying values out of the json object
+		for key, value in path.iteritems():
+			print getattr(self, key)
+			setattr(self, key + '_field', value)
+			setattr(self, key + '_value', getattr(self, key).get(value, None))
+
+
+
+	def __iter__(self):
+		for attr, value in self.__dict__.iteritems():
+			yield attr, value
