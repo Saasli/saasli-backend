@@ -6,7 +6,7 @@ from tools import Microservice, Credentials, Request
 def account(event, context):
 	request = Request(event.get('body'), event.get('path'))
 	print dict(request)
-	functions = Microservice(context.function_name)
+	functions = Microservice(context.function_name.split('-')[1])
 	body = event.get('body')
 
 	try:

@@ -9,10 +9,7 @@ def generate_hash(identifier_sf_id, logged_at):
 
 
 def event(event, context):
-	r = Request(event.get('body'))
-	print dict(r)
-	print r.event
-	functions = Microservice(context.function_name)
+	functions = Microservice(context.function_name.split('-')[1])
 	body = event.get('body')
 	# Decrypt Auth
 	credentials = Credentials(body.get('client_id'), functions)
@@ -55,8 +52,6 @@ def event(event, context):
 
 	# Build the User Usage History upsert
 	try:
-		print event
-		print event.get('Id')
 		#build the event sf_values
 		sf_values = {
 			body['sf_object_id'] + '__c' : record.get('Id'), #polymorphic relating id
