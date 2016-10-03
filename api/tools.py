@@ -4,9 +4,9 @@ import json
 
 
 class Microservice(object):
-	def __init__(self, function_name):
+	def __init__(self, version):
 		self.client = boto3.client('lambda')
-		self.version = function_name.split('-')[1] #grab the stage name from the function name
+		self.version = version
 
 	# Given the name of a lambda function (string) and 
 	# a dict containing they {key : value} parameters 
