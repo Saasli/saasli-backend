@@ -11,8 +11,7 @@ from tools import Request
 # }
 # Path
 # {
-# 	"account" : "Phone"
-# 	"contact" : "Name"
+# 	"account" : "Name"
 # }
 
 class AccountRequest(Request):

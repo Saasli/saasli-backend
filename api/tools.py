@@ -74,7 +74,7 @@ class Request(object):
 		self.functions = Microservice(self.version) # get a class level microservice client
 
 		# Get the SFDC credentials
-		# TOSO Error Handling
+		# TODO Error Handling
 		self.credentials = Credentials(self.clientid, self.functions)
 
 
@@ -99,10 +99,13 @@ class SFRecord(object):
 		record = self.functions.request('salesforce-rest', 'get', recordRequest)
 		self.exists = record is not None #inform the record exists
 		self.sfid = record.get('Id', None)
+		print self.sfid
 
 	#run a put on the SFRecord with the appropriate updates
-	def put(self, values):
+	def put(self, values, sfaccountid=None):
+		print "SF ACCOUNT: %s" % sfaccountid
 		putPayload = {
+			'sf_account_id' : sfaccountid, # Required if it's a contact put TODO: Don't get contact in the first place if it's not part of the account
 			'sf_object_id' : self.object, 
 			'sf_field_id' : 'Id',
 			'sf_field_value' : self.sfid,
