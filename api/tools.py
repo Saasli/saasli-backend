@@ -42,19 +42,83 @@ class Credentials(object):
 		except:
 			print 'No Such Client'
 
+
 class Request(object):
-	def __init__(self, body, path):
-		# Assign all the body + path fields to class attributes
-		for key, value in body.iteritems():
-			setattr(self, key, value)
-		# Fish the identifying values out of the json object
-		for key, value in path.iteritems():
-			print getattr(self, key)
-			setattr(self, key + '_field', value)
-			setattr(self, key + '_value', getattr(self, key).get(value, None))
+	def __init__(self, event, context):
+		# Get the JSON Body
+		try:
+			self.body = event['body']
+		except KeyError, e:
+			return #handle error NO BODY
+
+		# Get the path
+		try:
+			self.path = event['path']
+		except KeyError, e:
+			return #handle error NO PATH
+
+		# Get the client id
+		try:
+			self.clientid = self.body['client_id']
+		except KeyError, e:
+			return #handle no client id error
+
+		# Get the version of the api
+		try:
+			self.version = context.function_name.split('-')[1] #grab the stage version name from the function name
+		except AttributeError, e:
+			return #handle no function name error
+
+		# Get a class instance of lambda microservice
+		# TODO Error Handling
+		self.functions = Microservice(self.version) # get a class level microservice client
+
+		# Get the SFDC credentials
+		# TOSO Error Handling
+		self.credentials = Credentials(self.clientid, self.functions)
+
+
+	#returns a new SFRecord
+	def get_salesforce_record(self, field, value, object):
+		return SFRecord(field, value, object, self.credentials, self.functions)
 
 
 
-	def __iter__(self):
-		for attr, value in self.__dict__.iteritems():
-			yield attr, value
+class SFRecord(object):
+	def __init__(self, field, value, object, credentials, functions):
+		self.credentials = credentials
+		self.functions = functions
+		self.object = object
+		recordRequest = {
+			'sf_object_id' : object, 
+			'sf_field_id' : field,
+			'sf_field_value' : value,
+			'sf_select_fields' : ['Id'] # only interested in the Id
+		}
+		recordRequest.update(self.credentials.__dict__) #add in the creds
+		record = self.functions.request('salesforce-rest', 'get', recordRequest)
+		self.exists = record is not None #inform the record exists
+		self.sfid = record.get('Id', None)
+
+	#run a put on the SFRecord with the appropriate updates
+	def put(self, values):
+		putPayload = {
+			'sf_object_id' : self.object, 
+			'sf_field_id' : 'Id',
+			'sf_field_value' : self.sfid,
+			'sf_values' : values
+		}
+		putPayload.update(self.credentials.__dict__) #add in the creds
+		return self.functions.request('salesforce-rest', 'put', putPayload)
+
+
+
+
+
+
+
+
+
+
+
+
