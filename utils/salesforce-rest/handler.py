@@ -13,8 +13,7 @@ from tools import SalesforceClient
 #     password - Salesforce password
 #     token - Salesforce Token
 #     sf_object_id - The API Name of the Salesforce Object to query
-#     sf_field_id - The API Name of the field holding the query value
-#     sf_field_value - The Value of which the first matching occurence is returned
+#	  sf_conditions - An array of 'where' objects
 #     sf_select_fields - An array of the API names of the fields to return
 #
 #  returns e.g.
@@ -45,15 +44,10 @@ def get(payload, context):
 		return {'Error' : e.__dict__}
 	# Query
 	try:
-		where = [{
-			"a" : payload.get('sf_field_id'),
-			"op" : "=",
-			"b" : payload.get('sf_field_value')
-		}]
 		return sf.query(
 			payload.get('sf_select_fields'),
 			payload.get('sf_object_id'),
-			where
+			payload.get('sf_conditions')
 		)
 	except Exception, e:
 		return {"Error" : e.__dict__}
@@ -104,31 +98,11 @@ def put(payload, context):
 		return {'Error' : e.__dict__}
 	# Query
 	try:
-		#generate where clause
-		where = [{
-			"a" : payload.get('sf_field_id'),
-			"op" : "=",
-			"b" : payload.get('sf_field_value')
-		}]
-		# in the case of a contact, make sure their accountid is considered, and only update those who match
-		if payload.get('sf_object_id') == 'Contact':
-			try:
-				where.append({
-					"a" : "AccountId",
-					"op" : "=",
-					"b" : payload['sf_account_id']
-				})
-				payload.get('sf_values').update({
-					"AccountId" : payload['sf_account_id']
-				}) #Also add the account id to the update
-			except Exception, e:
-				return {"Error", "Account Id invalid"}
-
 		#execute the query
 		exists = sf.query(
 			['Id'],
 			payload.get('sf_object_id'),
-			where
+			payload.get('sf_conditions')
 		)
 	except Exception, e:
 		return {'Error' : e.__dict__}
@@ -136,7 +110,7 @@ def put(payload, context):
 	if exists is not None: #do an update if it exists
 		try:
 			payload.get('sf_values').pop('Id', None) #get rid of the Id as you can't update it
-			update_result = sf.update(exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
+			update_result = sf.update( exists.get('Id'), payload.get('sf_object_id'), payload.get('sf_values'))
 			return {"Method" : "Update", "Id" : exists.get('Id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
