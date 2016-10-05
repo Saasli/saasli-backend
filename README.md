@@ -93,6 +93,6 @@ For an Error:
 ```
 { 
 	'error' : True,
-	'message' : 'Desicription of what went wrong' 
+	'message' : 'Description of what went wrong' 
 }
 ```
