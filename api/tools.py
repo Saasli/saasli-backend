@@ -57,74 +57,92 @@ class Request(object):
 		try:
 			self.body = event['body']
 		except KeyError, e:
-			return #handle error NO BODY
+			raise MissingParameterError({"error", "No Body"})
 
 		# Get the path
 		try:
 			self.path = event['path']
 		except KeyError, e:
-			return #handle error NO PATH
+			raise MissingParameterError({"error", "No Path"})
 
 		# Get the client id
 		try:
 			self.clientid = self.body['client_id']
 		except KeyError, e:
-			return #handle no client id error
+			raise MissingParameterError({'error' : 'No Client Id'})
 
 		# Get the version of the api
 		try:
 			self.version = context.function_name.split('-')[1] #grab the stage version name from the function name
 		except AttributeError, e:
-			return #handle no function name error
+			raise AWSError({'error' : 'Fatal Error'})
 
 		# Get a class instance of lambda microservice
-		# TODO Error Handling
-		self.functions = Microservice(self.version) # get a class level microservice client
+		try:
+			self.functions = Microservice(self.version) # get a class level microservice client
+		except:
+			raise AWSError({"error" : self.functions})
 
 		# Get the SFDC credentials
-		# TODO Error Handling
 		self.credentials = Credentials(self.clientid, self.functions)
 
 
 	#returns a new SFRecord
-	def get_salesforce_record(self, field, value, object):
-		return SFRecord(field, value, object, self.credentials, self.functions)
+	def salesforce_record(self, conditions, object):
+		return SFRecord(conditions, object, self.credentials, self.functions)
 
 
 
 class SFRecord(object):
-	def __init__(self, field, value, object, credentials, functions):
+	def __init__(self, conditions, object, credentials, functions):
 		self.credentials = credentials
 		self.functions = functions
 		self.object = object
-		recordRequest = {
-			'sf_object_id' : object, 
-			'sf_field_id' : field,
-			'sf_field_value' : value,
+		self.sfid = self.get(conditions)['Id'] if self.get(conditions) is not None else None #Get the sfid or None
+	
+	def get(self, conditions):
+		getPayload = {
+			'sf_object_id' : self.object, 
+			'sf_conditions' : conditions,
 			'sf_select_fields' : ['Id'] # only interested in the Id
 		}
-		recordRequest.update(self.credentials.__dict__) #add in the creds
-		record = self.functions.request('salesforce-rest', 'get', recordRequest)
-		self.exists = record is not None #inform the record exists
-		self.sfid = record.get('Id', None)
-		print self.sfid
+		getPayload.update(self.credentials.__dict__) #add in the creds
+		return self.functions.request('salesforce-rest', 'get', getPayload)
 
 	#run a put on the SFRecord with the appropriate updates
-	def put(self, values, sfaccountid=None):
-		print "SF ACCOUNT: %s" % sfaccountid
+	def put(self, values):
 		putPayload = {
-			'sf_account_id' : sfaccountid, # Required if it's a contact put TODO: Don't get contact in the first place if it's not part of the account
 			'sf_object_id' : self.object, 
 			'sf_field_id' : 'Id',
 			'sf_field_value' : self.sfid,
 			'sf_values' : values
 		}
 		putPayload.update(self.credentials.__dict__) #add in the creds
-		return self.functions.request('salesforce-rest', 'put', putPayload)
+		response = self.functions.request('salesforce-rest', 'put', putPayload)
+		self.sfid = response['Id'] #make sure the sfid is up to date
+		return response
 
+	#run a create on the SFRecord with the appropriate updates
+	def create(self, values):
+		createPayload = {
+			'sf_object_id' : self.object, 
+			'sf_values' : values
+		}
+		createPayload.update(self.credentials.__dict__) #add in the creds
+		response = self.functions.request('salesforce-rest', 'create', createPayload)
+		self.sfid = response['id'] #make sure the sfid is up to date
+		return response
 
-
-
+	#run an update on the SFRecord with the appropriate updates
+	def update(self, values):
+		updatePayload = {
+			'sf_object_id' : self.object, 
+			'sf_id' : self.sfid,
+			'sf_values' : values
+		}
+		updatePayload.update(self.credentials.__dict__) #add in the creds
+		print updatePayload
+		return self.functions.request('salesforce-rest', 'update', updatePayload)
 
 
 
