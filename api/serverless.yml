@@ -22,6 +22,7 @@ package:
 # Functions
 functions:
   account:
+    timeout: 15
     handler: account/handler.account
     events:
       - http:
@@ -31,6 +32,7 @@ functions:
       include:
         - account
   contact:
+    timeout: 15
     handler: contact/handler.contact
     events:
       - http:
