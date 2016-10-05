@@ -76,3 +76,23 @@ If you need to add some new python libraries make sure that you're in the correc
 pip install |LIBRARY_NAME|
 pip freeze >> requirements.txt
 ```
+
+### Contracts
+
+All the functions in `utils` operate on a 'Contract' convention. They will always return a payload of the format:
+
+For a Success:
+```
+{ 
+	'error' : False,
+	'response' : ... # where this is the documented response dict
+}
+```
+
+For an Error:
+```
+{ 
+	'error' : True,
+	'message' : 'Desicription of what went wrong' 
+}
+```
