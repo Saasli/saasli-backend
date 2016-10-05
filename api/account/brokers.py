@@ -1,4 +1,4 @@
-from tools import Request
+from tools import *
 
 # Expecting to see 
 # Body
@@ -24,18 +24,19 @@ class AccountRequest(Request):
 		try:
 			self.accountvalues = self.body['account']
 		except KeyError, e:
-			return #handle error NO account param
+			raise MissingParameterError({'error' : 'Missing Account Values'})
 
 		# Get the search field
 		try:
 			field = self.path['account']
 		except KeyError, e:
-			return #handle no account param specified
+			raise MissingParameterError({'error' : 'No Account Identifying Field Specified'})
 
 		# Get the search field value
 		try:
 			value = self.accountvalues[field]
 		except KeyError, e:
-			return #handle error NO account param
+			raise MissingParameterError({'error' : 'No Cooresponding Account Identifying Field "%s" Specified' % field})
 
-		self.account = self.get_salesforce_record(field, value, 'Account')
+		conditions = [{ 'a' : field, 'op' : '=', 'b' : value }]
+		self.account = self.salesforce_record(conditions, 'Account')
