@@ -3,6 +3,8 @@ sys.path.insert(0, './venv/lib/python2.7/site-packages/') #TODO: Keep an eye out
 from simple_salesforce import Salesforce, SFType
 import json
 
+class MissingParameterError(KeyError):
+	pass
 
 #a local representation of the SF Client's Object
 class SalesforceObject(object):
@@ -99,6 +101,7 @@ class SalesforceClient(object):
 		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, self.whereify(where, table), limit)
 		# return the first matching record if it exists, else None
 		resp = self.sf.query(query_string)
+		print resp
 		if (resp.get('totalSize') > 0):
 			return resp.get('records')[0]
 		else:

@@ -1,4 +1,21 @@
-from tools import SalesforceClient
+from tools import *
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Takes the payload an returns an sfclient
+def auth(payload):
+	# Auth
+	try:
+		return SalesforceClient(
+				payload['username'], 
+				payload['password'], 
+				payload['token'],
+				payload['sandbox']
+			)
+	except KeyError, e:
+		logger.info('Error Getting Client Param: {}'.format(e.args[0]))
+		raise MissingParameterError('[500] Internal Salesforce Error')
 
 #####
 # get
@@ -34,23 +51,18 @@ from tools import SalesforceClient
 def get(payload, context):
 	# Auth
 	try:
-		sf = SalesforceClient(
-				payload.get('username'), 
-				payload.get('password'), 
-				payload.get('token'),
-				payload.get('sandbox')
-			)
+		sf = auth(payload)
 	except Exception, e:
-		return {'Error' : e.__dict__}
+		return {'error' : True, 'message' : e.args[0]}
 	# Query
 	try:
-		return sf.query(
+		return {'error' : False, 'response' : sf.query(
 			payload.get('sf_select_fields'),
 			payload.get('sf_object_id'),
 			payload.get('sf_conditions')
-		)
+		)}
 	except Exception, e:
-		return {"Error" : e.__dict__}
+		return {"error" : True,  'message' : e.args[0]}
 
 # # For Local Testing Purposes
 # print get({

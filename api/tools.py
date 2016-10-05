@@ -135,7 +135,8 @@ class SFRecord(object):
 		}
 		createPayload.update(self.credentials.__dict__) #add in the creds
 		response = self.functions.request('salesforce-rest', 'create', createPayload)
-		self.sfid = response['id'] #make sure the sfid is up to date
+		print response
+		self.sfid = response['Id'] #make sure the sfid is up to date
 		return response
 
 	#run an update on the SFRecord with the appropriate updates
