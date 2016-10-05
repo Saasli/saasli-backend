@@ -1,15 +1,9 @@
 from account.brokers import AccountRequest
 from tools import *
 
+
 def account(event, context):
-	try:
-		request = AccountRequest(event, context)
-	except MissingParameterError as e:
-		return e.args[0]
-	except CredentialError as e:
-		return e.args[0]
-	except AWSError as e:
-		return e.args[0]
+	request = AccountRequest(event, context)
 
 	#put the account
 	if request.account.sfid is not None:

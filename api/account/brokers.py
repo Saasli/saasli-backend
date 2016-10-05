@@ -24,19 +24,19 @@ class AccountRequest(Request):
 		try:
 			self.accountvalues = self.body['account']
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'Missing Account Values'})
+			raise MissingParameterError({'error' : '400 Missing Account Values'})
 
 		# Get the search field
 		try:
 			field = self.path['account']
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Account Identifying Field Specified'})
+			raise MissingParameterError({'error' : '400 No Account Identifying Field Specified'})
 
 		# Get the search field value
 		try:
 			value = self.accountvalues[field]
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Cooresponding Account Identifying Field "%s" Specified' % field})
+			raise MissingParameterError({'error' : '400 No Cooresponding Account Identifying Field "%s" Specified' % field})
 
 		conditions = [{ 'a' : field, 'op' : '=', 'b' : value }]
 		self.account = self.salesforce_record(conditions, 'Account')

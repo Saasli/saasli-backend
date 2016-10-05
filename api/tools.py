@@ -5,6 +5,9 @@ import json
 class MissingParameterError(KeyError):
 	pass
 
+class SalesforceError(Exception):
+	pass
+
 class AWSError(Exception):
 	pass
 
@@ -48,7 +51,7 @@ class Credentials(object):
 			for key, value in json.loads(functions.request('kms','decrypt', kmsPayload)).iteritems():
 				setattr(self, key, value)
 		except:
-			raise CredentialError({'error' : 'Invalid Client Id'})
+			raise CredentialError('400 Invalid Client Id')
 
 
 class Request(object):
@@ -57,25 +60,25 @@ class Request(object):
 		try:
 			self.body = event['body']
 		except KeyError, e:
-			raise MissingParameterError({"error", "No Body"})
+			raise MissingParameterError({"error", "400 No Body"})
 
 		# Get the path
 		try:
 			self.path = event['path']
 		except KeyError, e:
-			raise MissingParameterError({"error", "No Path"})
+			raise MissingParameterError({"error", "400 No Path"})
 
 		# Get the client id
 		try:
 			self.clientid = self.body['client_id']
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Client Id'})
+			raise MissingParameterError({'error' : '400 No Client Id'})
 
 		# Get the version of the api
 		try:
 			self.version = context.function_name.split('-')[1] #grab the stage version name from the function name
 		except AttributeError, e:
-			raise AWSError({'error' : 'Fatal Error'})
+			raise AWSError({'error' : '500 Fatal Error'})
 
 		# Get a class instance of lambda microservice
 		try:
@@ -91,8 +94,6 @@ class Request(object):
 	def salesforce_record(self, conditions, object):
 		return SFRecord(conditions, object, self.credentials, self.functions)
 
-
-
 class SFRecord(object):
 	def __init__(self, conditions, object, credentials, functions):
 		self.credentials = credentials
@@ -107,7 +108,11 @@ class SFRecord(object):
 			'sf_select_fields' : ['Id'] # only interested in the Id
 		}
 		getPayload.update(self.credentials.__dict__) #add in the creds
-		return self.functions.request('salesforce-rest', 'get', getPayload)
+		getResponse = self.functions.request('salesforce-rest', 'get', getPayload)
+		if not getResponse['error']:
+			return getResponse['response']
+		else:
+			raise SalesforceError(getResponse['message'])
 
 	#run a put on the SFRecord with the appropriate updates
 	def put(self, values):
