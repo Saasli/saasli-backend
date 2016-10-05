@@ -2,6 +2,14 @@
 import boto3
 import json
 
+class MissingParameterError(KeyError):
+	pass
+
+class AWSError(Exception):
+	pass
+
+class CredentialError(Exception):
+	pass
 
 class Microservice(object):
 	def __init__(self, version):
@@ -40,7 +48,7 @@ class Credentials(object):
 			for key, value in json.loads(functions.request('kms','decrypt', kmsPayload)).iteritems():
 				setattr(self, key, value)
 		except:
-			print 'No Such Client'
+			raise CredentialError({'error' : 'Invalid Client Id'})
 
 
 class Request(object):
