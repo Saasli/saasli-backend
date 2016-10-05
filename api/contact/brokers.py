@@ -1,4 +1,4 @@
-from tools import Request
+from tools import *
 
 # Expecting to see 
 # Body
@@ -23,46 +23,52 @@ class ContactRequest(Request):
 	def __init__(self, event, context):
 		# Instantiate the base request
 		Request.__init__(self, event, context)
+		self.error = None
 
 		## Account
 		# Get the account values
 		try:
 			self.accountvalues = self.body['account']
 		except KeyError, e:
-			return #handle error NO account param
+			raise MissingParameterError({'error' : 'No Account Values Specified'})
 
 		# get the account search field
 		try:
 			a_field = self.path['account']
 		except KeyError, e:
-			return #handle no account param specified
+			raise MissingParameterError({'error' : 'No Account Identifying Field Specified'})
 
 		# Get the search field value
 		try:
 			a_value = self.accountvalues[a_field]
 		except KeyError, e:
-			return #handle error NO id value param
+			raise MissingParameterError({'error' : 'No Cooresponding Account Identifying Field "%s" Specified' % a_field})
 
-		self.account = self.get_salesforce_record(a_field, a_value, 'Account')
-
+		# Generate the account conditions
+		a_conditions = [{ 'a' : a_field, 'op' : '=', 'b' : a_value }]
+		self.account = self.salesforce_record(a_conditions, 'Account')
 
 		## Contact
 		# Get the contact values
 		try:
 			self.contactvalues = self.body['contact']
+			self.contactvalues.update({'AccountId' : self.account.sfid})
 		except KeyError, e:
-			return #handle error NO contact param
+			raise MissingParameterError({'error' : 'No Contact Values Specified'})
 
 		# Get the contact search field
 		try:
 			c_field = self.path['contact']
 		except KeyError, e:
-			return #handle no contact param specified
+			raise MissingParameterError({'error' : 'No Contact Identifying Field Specified'})
 
 		# Get the search field value
 		try:
 			c_value = self.contactvalues[c_field]
 		except KeyError, e:
-			return #handle error NO id value param
+			raise MissingParameterError({'error' : 'No Cooresponding Contact Identifying Field "%s" Specified' % c_field})
 
-		self.contact = self.get_salesforce_record(c_field, c_value, 'Contact')
+		# Generate the contact conditions
+		c_conditions = [{ 'a' : c_field, 'op' : '=', 'b' : c_value },
+						{ 'a' : 'AccountId', 'op' : '=', 'b' : self.account.sfid }]
+		self.contact = self.salesforce_record(c_conditions, 'Contact')
