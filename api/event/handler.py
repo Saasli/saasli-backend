@@ -19,7 +19,8 @@ def event(event, context):
 			uuh_values = {
 				'%s__c' % request.triggeringrecordobjecttype : request.triggeringrecord.sfid, #polymorphic relating id
 				'User_Usage_History_Event_Type__c' : request.userusagetype.sfid,
-				'Event_Date_Created_UNIX__c' : request.eventtime
+				'Event_Date_Created_UNIX__c' : request.eventtime,
+				'Saasli_Event_Id__c' : uuh_saasli_id
 			}
 			return uuh.create(uuh_values) # make the new event
 		else:
