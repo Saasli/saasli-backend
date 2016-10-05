@@ -123,3 +123,43 @@ def put(payload, context):
 			return {"Method" : "Create", "Id" : create_result.get('id')}
 		except Exception, e:
 			return {"Error" : e.__dict__}
+
+def create(payload, context):
+	# Auth
+	try:
+		sf = SalesforceClient(
+				payload.get('username'), 
+				payload.get('password'), 
+				payload.get('token'),
+				payload.get('sandbox')
+			)
+	except Exception, e:
+		return {'Error' : e.__dict__}
+	# Create
+	values = payload.get('sf_values')
+	values.pop('Id', None)
+	create_result = sf.create(payload.get('sf_object_id'), values)
+	if create_result.get('success'):
+		return {"Method" : "Create", "Id" : create_result.get('id')}
+	else:
+		return {"Error" : "Create Failed", "Message" : create_result.get('errors')}
+
+def update(payload, context):
+	# Auth
+	try:
+		sf = SalesforceClient(
+				payload.get('username'), 
+				payload.get('password'), 
+				payload.get('token'),
+				payload.get('sandbox')
+			)
+	except Exception, e:
+		return {'Error' : e.__dict__}
+	# Update
+	values = payload.get('sf_values')
+	values.pop('Id', None) # Don't try an update an Id field
+	update_result = sf.update(payload.get('sf_id'), payload.get('sf_object_id'), values)
+	if update_result == 204:
+		return {"Method" : "Update", "Id" : payload.get('sf_id')}
+	else:
+		return {"Error" : "Update Failed", "Message" : update_result}

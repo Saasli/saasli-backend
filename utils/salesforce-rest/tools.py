@@ -105,11 +105,13 @@ class SalesforceClient(object):
 			return None
 
 	#create a new record of type 'object' with values of type dict
+	# sf_type create returns OrderedDict([(u'id', u'0011a00000YQUo5AAH'), (u'success', True), (u'errors', [])]) on success
 	def create(self, object_type, values):
 		sf_type = SFType(object_type, self.session_id, self.sf_instance)
 		return sf_type.create(values)
 
 	#update and existing record given it's sf_id
+	# sf_type update returns `204` on success
 	def update(self, sf_id, object_type, values):
 		sf_type = SFType(object_type, self.session_id, self.sf_instance)
 		return sf_type.update(sf_id, values)

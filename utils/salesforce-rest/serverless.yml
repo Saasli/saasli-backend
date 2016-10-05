@@ -49,6 +49,10 @@ functions:
     handler: handler.get
   put:
     handler: handler.put
+  create:
+    handler: handler.create
+  update:
+    handler: handler.update
 
 #   you can add any of the following events
 #    events:
