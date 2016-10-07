@@ -70,5 +70,5 @@ class ContactRequest(Request):
 
 		# Generate the contact conditions
 		c_conditions = [{ 'a' : c_field, 'op' : '=', 'b' : c_value },
-						{ 'a' : 'AccountId', 'op' : '=', 'b' : self.account.sfid }]
+						{ 'a' : 'AccountId', 'op' : '=', 'b' : self.account.sfid }] #Make sure we're only getting contacts from the specified account
 		self.contact = self.salesforce_record(c_conditions, 'Contact')

@@ -53,11 +53,11 @@ def get(payload, context):
 		return {'error' : True, 'message' : e.args[0]}
 	# Query
 	try:
-		return {'error' : False, 'response' : sf.query(
+		return sf.query(
 			payload.get('sf_select_fields'),
 			payload.get('sf_object_id'),
 			payload.get('sf_conditions')
-		)}
+		)
 	except Exception, e:
 		return {"error" : True,  "message" : e.args[0]}
 
@@ -101,17 +101,19 @@ def put(payload, context):
 	except KeyError, e:
 		return {"error" : True,  "message" : "[500] Missing Credentials %s" % args[0]}
 	except Exception, e:
-		reurn {"error" : True, "message" : "[500] Salesforce Auth Error"}
+		return {"error" : True, "message" : "[500] Salesforce Auth Error"}
 	# Query
 	try:
 		#execute the query
 		exists = sf.query(
 			['Id'],
-			payload.get('sf_object_id'),
-			payload.get('sf_conditions')
+			payload['sf_object_id'],
+			payload['sf_conditions']
 		)
+	except KeyError, e:
+		return {"error" : True,  "message" : "Missing a %s" % e.args[0]}
 	except Exception, e:
-		return {"error" : True,  'message' : e.args[0]}
+		return {"error" : True,  "message" : e.args[0]}
 	# Upsert
 	if exists is not None: #do an update if it exists
 		try:
@@ -133,14 +135,10 @@ def put(payload, context):
 def create(payload, context):
 	# Auth
 	try:
-		sf = SalesforceClient(
-				payload.get('username'), 
-				payload.get('password'), 
-				payload.get('token'),
-				payload.get('sandbox')
-			)
-	except Exception, e:
-		return {'Error' : e.__dict__}
+		sf = auth(payload)
+	except KeyError, e:
+		logger.info('Error Getting Client Param: {}'.format(e.args[0]))
+		return {'error' : True, 'message' : e.args[0]}
 	# Create
 	values = payload.get('sf_values')
 	values.pop('Id', None)
