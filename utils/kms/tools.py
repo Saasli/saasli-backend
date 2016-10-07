@@ -11,11 +11,11 @@ class KMS(object):
 		response = self.client.encrypt(
 			KeyId=key,
 			Plaintext=text
-		)
-		return base64.b64encode(response.get('CiphertextBlob'))
+		)['CiphertextBlob'] = base64.b64encode(response.get('CiphertextBlob')) #base64 encode the blob
+		return response
 
 	def decrypt(self, cipher):
 		response = self.client.decrypt(
 			CiphertextBlob=base64.b64decode(cipher),
 		)
-		return response.get('Plaintext')
+		return response
