@@ -3,7 +3,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.
 from tools import Microservice
 
 def encrypt(event, context):
-	functions = Microservice(context.function_name)
+	functions = Microservice(context.function_name.split('-')[1])
 	try:
 		print event
 		payload = { 
@@ -18,7 +18,7 @@ def encrypt(event, context):
 
 
 def decrypt(event, context):
-	functions = Microservice(context.function_name)
+	functions = Microservice(context.function_name.split('-')[1])
 	try:
 		print event
 		payload = { 
