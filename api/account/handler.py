@@ -4,7 +4,6 @@ from tools import *
 
 def account(event, context):
 	request = AccountRequest(event, context)
-
 	#put the account
 	if request.account.sfid is not None:
 		return request.account.update(request.accountvalues)

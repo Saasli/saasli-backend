@@ -24,34 +24,38 @@ class Microservice(object):
 	# returns the response of the lambda function
 	def request(self, service, function, payload):
 		function_name = "%s-%s-%s" % (service, self.version, function)
-		return json.loads( self.client.invoke(
+		response = json.loads( self.client.invoke(
 			FunctionName=function_name,
 			InvocationType='RequestResponse',
 			Payload=json.dumps(payload).encode()
 		)['Payload'].read())
+		print "Response: %s" % response
+		if response.get('errorType', False): # Is there an errorType? 
+			response.pop('stackTrace', None) # Get rid of the stackTrace
+			raise Exception(response) # Throw the error out to the client
+		else:
+			return response
 
 
 #This class expects that stored in the 'credentials' attribute of the client 
 #is an encrypted base64 stringified piece of json.
 class Credentials(object):
 	def __init__(self, id, functions):
-		try:
-			# Get the encrypted data for the client
-			dynamoPayload = {
-				'id' : id,
-				'key' : 'id',
-				'tablename' : 'clients'
-			}
-			encryptedCredentials = functions.request('dynamodb','getitem', dynamoPayload)
-			# Decrypt the client credentials
-			kmsPayload = { 
-				'cipher' : encryptedCredentials.get('credentials').get('S')
-			}
-			# Assign all the encrypted fields to class attributes
-			for key, value in json.loads(functions.request('kms','decrypt', kmsPayload)).iteritems():
-				setattr(self, key, value)
-		except:
-			raise CredentialError('400 Invalid Client Id')
+		# Get the encrypted data for the client
+		dynamoPayload = {
+			'id' : id,
+			'key' : 'id',
+			'tablename' : 'clients'
+		}
+		encryptedCredentials = functions.request('dynamodb','getitem', dynamoPayload)
+		# Decrypt the client credentials
+		kmsPayload = { 
+			'cipher' : encryptedCredentials.get('credentials').get('S')
+		}
+		# Assign all the encrypted fields to class attributes
+		decryptedCredentials = functions.request('kms','decrypt', kmsPayload)['Plaintext']
+		for key, value in json.loads(decryptedCredentials).iteritems():
+			setattr(self, key, value)
 
 
 class Request(object):
