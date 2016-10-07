@@ -19,7 +19,7 @@ def contact(event, context):
 		else:
 			return request.contact.create(request.contactvalues)
 	else:
-		return {'error' : 'No such account found'}
+		raise SalesforceError('[400] No associating Account found.')
 
 def contacts(event, context):
 	return { "message": "Go Serverless v1.0! Your function executed successfully!", "event": event }

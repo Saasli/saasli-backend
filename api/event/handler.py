@@ -24,9 +24,9 @@ def event(event, context):
 			}
 			return uuh.create(uuh_values) # make the new event
 		else:
-			return {'Error' : 'Event Already Exists'}
+			raise SalesforceError('[400] This event already exists.')
 	else:
-		return {'Error' : 'No record to associate event to'}
+		raise SalesforceError('[400] No associating Record found. Ensure the entity that triggered the event already exists in Salesforce.')
 
 
 def events(event, context):

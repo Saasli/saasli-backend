@@ -6,16 +6,12 @@ logger.setLevel(logging.INFO)
 # Takes the payload an returns an sfclient
 def auth(payload):
 	# Auth
-	try:
-		return SalesforceClient(
-				payload['username'], 
-				payload['password'], 
-				payload['token'],
-				payload['sandbox']
-			)
-	except KeyError, e:
-		logger.info('Error Getting Client Param: {}'.format(e.args[0]))
-		raise MissingParameterError('[500] Internal Salesforce Error')
+	return SalesforceClient(
+			payload['username'], 
+			payload['password'], 
+			payload['token'],
+			payload['sandbox']
+		)
 
 #####
 # get
@@ -52,7 +48,8 @@ def get(payload, context):
 	# Auth
 	try:
 		sf = auth(payload)
-	except Exception, e:
+	except KeyError, e:
+		logger.info('Error Getting Client Param: {}'.format(e.args[0]))
 		return {'error' : True, 'message' : e.args[0]}
 	# Query
 	try:
@@ -62,7 +59,7 @@ def get(payload, context):
 			payload.get('sf_conditions')
 		)}
 	except Exception, e:
-		return {"error" : True,  'message' : e.args[0]}
+		return {"error" : True,  "message" : e.args[0]}
 
 # # For Local Testing Purposes
 # print get({
@@ -100,14 +97,11 @@ def get(payload, context):
 def put(payload, context):
 	# Auth
 	try:
-		sf = SalesforceClient(
-				payload.get('username'), 
-				payload.get('password'), 
-				payload.get('token'),
-				payload.get('sandbox')
-			)
+		sf = auth(payload)
+	except KeyError, e:
+		return {"error" : True,  "message" : "[500] Missing Credentials %s" % args[0]}
 	except Exception, e:
-		return {'Error' : e.__dict__}
+		reurn {"error" : True, "message" : "[500] Salesforce Auth Error"}
 	# Query
 	try:
 		#execute the query
@@ -117,7 +111,7 @@ def put(payload, context):
 			payload.get('sf_conditions')
 		)
 	except Exception, e:
-		return {'Error' : e.__dict__}
+		return {"error" : True,  'message' : e.args[0]}
 	# Upsert
 	if exists is not None: #do an update if it exists
 		try:
