@@ -108,11 +108,8 @@ class SFRecord(object):
 			'sf_select_fields' : ['Id'] # only interested in the Id
 		}
 		getPayload.update(self.credentials.__dict__) #add in the creds
-		getResponse = self.functions.request('salesforce-rest', 'get', getPayload)
-		if not getResponse['error']:
-			return getResponse['response']
-		else:
-			raise SalesforceError(getResponse['message'])
+		return self.functions.request('salesforce-rest', 'get', getPayload)
+			
 
 	#run a put on the SFRecord with the appropriate updates
 	def put(self, values):
