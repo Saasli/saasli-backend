@@ -10,7 +10,7 @@ def encrypt(event, context):
 			'text' : event.get('body').get('text'),
 			'key' : 'alias/clientkey' #todo: figure out how to not hardcode this
 		}
-		encryptedText = functions.request('kms', 'encrypt', payload)
+		encryptedText = functions.request('kms', 'encrypt', payload)['CiphertextBlob']
 		response = {'encrypted' : encryptedText}
 	except:
 		response = {'Error' : 'Invalid Parameters'}
@@ -24,7 +24,7 @@ def decrypt(event, context):
 		payload = { 
 			'cipher' : event.get('body').get('cipher')
 		}
-		decryptedText = functions.request('kms', 'decrypt', payload)
+		decryptedText = functions.request('kms', 'decrypt', payload)['Plaintext']
 		response = {'decrypted' : decryptedText}
 	except:
 		response = {'Error' : 'Invalid Parameters'}

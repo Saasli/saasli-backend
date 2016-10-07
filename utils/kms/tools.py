@@ -11,7 +11,8 @@ class KMS(object):
 		response = self.client.encrypt(
 			KeyId=key,
 			Plaintext=text
-		)['CiphertextBlob'] = base64.b64encode(response.get('CiphertextBlob')) #base64 encode the blob
+		)
+		response['CiphertextBlob'] = base64.b64encode(response.get('CiphertextBlob')) #base64 encode the blob
 		return response
 
 	def decrypt(self, cipher):
