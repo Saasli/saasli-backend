@@ -45,13 +45,7 @@ def auth(payload):
 ######
 
 def get(payload, context):
-	# Auth
-	try:
-		sf = auth(payload)
-	except KeyError, e:
-		logger.info('Error Getting Client Param: {}'.format(e.args[0]))
-		return {'error' : True, 'message' : e.args[0]}
-	# Query
+	sf = auth(payload)
 	try:
 		return sf.query(
 			payload.get('sf_select_fields'),
@@ -95,13 +89,7 @@ def get(payload, context):
 #
 ######
 def put(payload, context):
-	# Auth
-	try:
-		sf = auth(payload)
-	except KeyError, e:
-		return {"error" : True,  "message" : "[500] Missing Credentials %s" % args[0]}
-	except Exception, e:
-		return {"error" : True, "message" : "[500] Salesforce Auth Error"}
+	sf = auth(payload)
 	# Query
 	try:
 		#execute the query
@@ -133,12 +121,7 @@ def put(payload, context):
 			return {"Error" : e.__dict__}
 
 def create(payload, context):
-	# Auth
-	try:
-		sf = auth(payload)
-	except KeyError, e:
-		logger.info('Error Getting Client Param: {}'.format(e.args[0]))
-		return {'error' : True, 'message' : e.args[0]}
+	sf = auth(payload)
 	# Create
 	values = payload.get('sf_values')
 	values.pop('Id', None)
@@ -146,19 +129,10 @@ def create(payload, context):
 	if create_result.get('success'):
 		return {"Method" : "Create", "Id" : create_result.get('id')}
 	else:
-		return {"Error" : "Create Failed", "Message" : create_result.get('errors')}
+		raise SimpleSalesforceException(create_result.get('errors'))
 
 def update(payload, context):
-	# Auth
-	try:
-		sf = SalesforceClient(
-				payload.get('username'), 
-				payload.get('password'), 
-				payload.get('token'),
-				payload.get('sandbox')
-			)
-	except Exception, e:
-		return {'Error' : e.__dict__}
+	sf = auth(payload)
 	# Update
 	values = payload.get('sf_values')
 	values.pop('Id', None) # Don't try an update an Id field
@@ -166,4 +140,4 @@ def update(payload, context):
 	if update_result == 204:
 		return {"Method" : "Update", "Id" : payload.get('sf_id')}
 	else:
-		return {"Error" : "Update Failed", "Message" : update_result}
+		raise SimpleSalesforceException(update_result)
