@@ -79,20 +79,4 @@ pip freeze >> requirements.txt
 
 ### Contracts
 
-All the functions in `utils` operate on a 'Contract' convention. They will always return a payload of the format:
-
-For a Success:
-```
-{ 
-	'error' : False,
-	'response' : ... # where this is the documented response dict
-}
-```
-
-For an Error:
-```
-{ 
-	'error' : True,
-	'message' : 'Description of what went wrong' 
-}
-```
+All the functions in `utils` operate on a 'Contract' convention. They will always return a payload of the format. Whenever one is called, be sure to check for the existance of `errorType` as an exception thrown in one will return that.
