@@ -64,25 +64,25 @@ class Request(object):
 		try:
 			self.body = event['body']
 		except KeyError, e:
-			raise MissingParameterError({"error", "400 No Body"})
+			raise MissingParameterError({"error", "[400] No Body"})
 
 		# Get the path
 		try:
 			self.path = event['path']
 		except KeyError, e:
-			raise MissingParameterError({"error", "400 No Path"})
+			raise MissingParameterError({"error", "[400] No Path"})
 
 		# Get the client id
 		try:
 			self.clientid = self.body['client_id']
 		except KeyError, e:
-			raise MissingParameterError({'error' : '400 No Client Id'})
+			raise MissingParameterError({'error' : '[400] No Client Id'})
 
 		# Get the version of the api
 		try:
 			self.version = context.function_name.split('-')[1] #grab the stage version name from the function name
 		except AttributeError, e:
-			raise AWSError({'error' : '500 Fatal Error'})
+			raise AWSError({'error' : '[500] Fatal Error'})
 
 		# Get a class instance of lambda microservice
 		try:

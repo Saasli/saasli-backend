@@ -2,14 +2,7 @@ from contact.brokers import ContactRequest
 from tools import *
 
 def contact(event, context):
-	try:
-		request = ContactRequest(event, context)
-	except MissingParameterError as e:
-		return e.args[0]
-	except CredentialError as e:
-		return e.args[0]
-	except AWSError as e:
-		return e.args[0]
+	request = ContactRequest(event, context)
 
 	#try and get the account
 	if request.account.sfid is not None:
