@@ -1,6 +1,9 @@
 # Thank you http://stackoverflow.com/questions/36784925/how-to-get-return-response-from-aws-lambda-function
 import boto3
 import json
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class MissingParameterError(KeyError):
 	pass
@@ -24,16 +27,18 @@ class Microservice(object):
 	# returns the response of the lambda function
 	def request(self, service, function, payload):
 		function_name = "%s-%s-%s" % (service, self.version, function)
+		logger.info('Requesting. {}'.format(function_name))
 		response = json.loads( self.client.invoke(
 			FunctionName=function_name,
 			InvocationType='RequestResponse',
 			Payload=json.dumps(payload).encode()
 		)['Payload'].read())
-		print "Response: %s" % response
 		if response.get('errorType', False): # Is there an errorType? 
+			logger.info('Response Failed: {}'.format(response))
 			response.pop('stackTrace', None) # Get rid of the stackTrace
 			raise Exception(response) # Throw the error out to the client
 		else:
+			logger.info('Response Successful: {}'.format(response))
 			return response
 
 
@@ -41,6 +46,7 @@ class Microservice(object):
 #is an encrypted base64 stringified piece of json.
 class Credentials(object):
 	def __init__(self, id, functions):
+		logger.info('Obtaining Salesforce Credentials.')
 		# Get the encrypted data for the client
 		dynamoPayload = {
 			'id' : id,
@@ -48,18 +54,21 @@ class Credentials(object):
 			'tablename' : 'clients'
 		}
 		encryptedCredentials = functions.request('dynamodb','getitem', dynamoPayload)
+		logger.info('Retrieved Encrypted Credentials Successfully.')
 		# Decrypt the client credentials
 		kmsPayload = { 
 			'cipher' : encryptedCredentials.get('credentials').get('S')
 		}
 		# Assign all the encrypted fields to class attributes
 		decryptedCredentials = functions.request('kms','decrypt', kmsPayload)['Plaintext']
+		logger.info('Decrypted Credentials Successfully.')
 		for key, value in json.loads(decryptedCredentials).iteritems():
 			setattr(self, key, value)
 
 
 class Request(object):
 	def __init__(self, event, context):
+		logger.info('Processing Request.')
 		# Get the JSON Body
 		try:
 			self.body = event['body']
@@ -100,12 +109,14 @@ class Request(object):
 
 class SFRecord(object):
 	def __init__(self, conditions, object, credentials, functions):
+		logger.info('Initializing New SF Record Class: {}.'.format(object))
 		self.credentials = credentials
 		self.functions = functions
 		self.object = object
 		self.sfid = self.get(conditions)['Id'] if self.get(conditions) is not None else None #Get the sfid or None
 	
 	def get(self, conditions):
+		logger.info('SF Record Get: {}.'.format(self.object))
 		getPayload = {
 			'sf_object_id' : self.object, 
 			'sf_conditions' : conditions,
@@ -117,6 +128,7 @@ class SFRecord(object):
 
 	#run a put on the SFRecord with the appropriate updates
 	def put(self, values):
+		logger.info('SF Record Put: {}.'.format(self.object))
 		putPayload = {
 			'sf_object_id' : self.object, 
 			'sf_field_id' : 'Id',
@@ -130,6 +142,7 @@ class SFRecord(object):
 
 	#run a create on the SFRecord with the appropriate updates
 	def create(self, values):
+		logger.info('SF Record Create: {}.'.format(self.object))
 		createPayload = {
 			'sf_object_id' : self.object, 
 			'sf_values' : values
@@ -142,6 +155,7 @@ class SFRecord(object):
 
 	#run an update on the SFRecord with the appropriate updates
 	def update(self, values):
+		logger.info('SF Record Update: {}.'.format(self.object))
 		updatePayload = {
 			'sf_object_id' : self.object, 
 			'sf_id' : self.sfid,
