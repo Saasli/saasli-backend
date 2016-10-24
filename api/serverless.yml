@@ -26,8 +26,31 @@ functions:
     handler: account/handler.account
     events:
       - http:
+          integration: lambda
           method: post
           path: account/{account}
+          response:
+            statusCodes:
+              200:
+                pattern: '' # Default response method
+                template: $input.json('$.body')
+                headers:
+                Content-Type: "'application/json'"
+              400:
+                pattern: '.*\[400\].*'
+                template: $input.path('$.errorMessage')
+                headers:
+                Content-Type: "'application/json'"
+              422:
+                pattern: '.*\[422\].*'
+                template: $input.path('$.errorMessage')
+                headers:
+                Content-Type: "'application/json'"
+              500:
+                pattern: '.*(Process\s?exited\s?before\s?completing\s?request|\[500\]).*'
+                template: '{"Message" : "Please"}'
+                headers:
+                Content-Type: "'application/json'"
     package:
       include:
         - account
@@ -36,6 +59,7 @@ functions:
     handler: contact/handler.contact
     events:
       - http:
+          integration: lambda
           method: post
           path: contact/{account}/{contact}
     package:
@@ -76,6 +100,7 @@ functions:
     handler: event/handler.event
     events: #confusing, but this is the triggering events not the name of the endpoints
       - http:
+          integration: lambda
           method: post
           path: event
     package:
