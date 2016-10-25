@@ -45,15 +45,13 @@ def auth(payload):
 ######
 
 def get(payload, context):
+	logger.info('performing get with payload: {}'.format(payload))
 	sf = auth(payload)
-	try:
-		return sf.query(
-			payload.get('sf_select_fields'),
-			payload.get('sf_object_id'),
-			payload.get('sf_conditions')
-		)
-	except Exception, e:
-		return {"error" : True,  "message" : e.args[0]}
+	return sf.query(
+		payload.get('sf_select_fields'),
+		payload.get('sf_object_id'),
+		payload.get('sf_conditions')
+	)
 
 # # For Local Testing Purposes
 # print get({
