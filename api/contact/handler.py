@@ -8,7 +8,7 @@ def contact(event, context):
 	logger.info('contact endpoint hit: {}'.format(event))
 	request = ContactRequest(event, context)
 	#try and get the account
-	if request.account.sfid is None:
+	if request.account.sfid is not None:
 		#put the contact
 		if request.contact.sfid is not None:
 			logger.info('Contact does exist: performing update')

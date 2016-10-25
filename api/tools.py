@@ -115,7 +115,7 @@ class SFRecord(object):
 		self.credentials = credentials
 		self.functions = functions
 		self.object = object
-		self.sfid = self.get(conditions)['Id'] if self.get(conditions) is not None else None #Get the sfid or None
+		self.sfid = self.get(conditions)['Id']
 	
 	def get(self, conditions):
 		logger.info('SF Record Get: {}.'.format(self.object))
