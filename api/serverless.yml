@@ -22,40 +22,40 @@ package:
 # Functions
 functions:
   account:
-    timeout: 15
+    timeout: 60
     handler: account/handler.account
     events:
       - http:
           integration: lambda
           method: post
           path: account/{account}
-          response:
-            statusCodes:
-              200:
-                pattern: '' # Default response method
-                template: $input.json('$.body')
-                headers:
-                Content-Type: "'application/json'"
-              400:
-                pattern: '.*\[400\].*'
-                template: $input.path('$.errorMessage')
-                headers:
-                Content-Type: "'application/json'"
-              422:
-                pattern: '.*\[422\].*'
-                template: $input.path('$.errorMessage')
-                headers:
-                Content-Type: "'application/json'"
-              500:
-                pattern: '.*(Process\s?exited\s?before\s?completing\s?request|\[500\]).*'
-                template: '{"Message" : "Please"}'
-                headers:
-                Content-Type: "'application/json'"
+          # response:
+          #   statusCodes:
+          #     200:
+          #       pattern: '' # Default response method
+          #       template: $input.json('$.body')
+          #       headers:
+          #       Content-Type: "'application/json'"
+          #     400:
+          #       pattern: '.*\[400\].*'
+          #       template: $input.path('$.errorMessage')
+          #       headers:
+          #       Content-Type: "'application/json'"
+          #     422:
+          #       pattern: '.*\[422\].*'
+          #       template: $input.path('$.errorMessage')
+          #       headers:
+          #       Content-Type: "'application/json'"
+          #     500:
+          #       pattern: '.*(Process\s?exited\s?before\s?completing\s?request|\[500\]).*'
+          #       template: '{"Message" : "Please"}'
+          #       headers:
+          #       Content-Type: "'application/json'"
     package:
       include:
         - account
   contact:
-    timeout: 15
+    timeout: 60
     handler: contact/handler.contact
     events:
       - http:
@@ -96,7 +96,7 @@ functions:
       include:
         - encryption
   event:
-    timeout: 15
+    timeout: 60
     handler: event/handler.event
     events: #confusing, but this is the triggering events not the name of the endpoints
       - http:
