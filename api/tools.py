@@ -33,10 +33,11 @@ class Microservice(object):
 			InvocationType='RequestResponse',
 			Payload=json.dumps(payload).encode()
 		)['Payload'].read())
+		logger.info('Raw Response. {}'.format(response))
 		if response.get('errorType', False): # Is there an errorType? 
 			logger.info('Response Failed: {}'.format(response))
 			response.pop('stackTrace', None) # Get rid of the stackTrace
-			raise Exception(response) # Throw the error out to the client
+			raise Exception(response['errorMessage']) # Throw the error out to the client
 		else:
 			logger.info('Response Successful: {}'.format(response))
 			return response
@@ -63,6 +64,7 @@ class Credentials(object):
 		decryptedCredentials = functions.request('kms','decrypt', kmsPayload)['Plaintext']
 		logger.info('Decrypted Credentials Successfully.')
 		for key, value in json.loads(decryptedCredentials).iteritems():
+			logger.info('Adding Attribute {}:{} to Credentials Class.'.format(key, value))
 			setattr(self, key, value)
 
 
@@ -149,7 +151,6 @@ class SFRecord(object):
 		}
 		createPayload.update(self.credentials.__dict__) #add in the creds
 		response = self.functions.request('salesforce-rest', 'create', createPayload)
-		print response
 		self.sfid = response['Id'] #make sure the sfid is up to date
 		return response
 

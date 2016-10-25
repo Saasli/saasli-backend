@@ -6,7 +6,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def generate_hash(identifier_sf_id, logged_at):
-	logger.info('Generating Saasli event Id hash.')
 	join = str(identifier_sf_id) + str(logged_at)
 	hash = hashlib.md5(join)
 	return hash.hexdigest()

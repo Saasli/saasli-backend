@@ -104,10 +104,12 @@ class SalesforceClient(object):
 		query_string = "SELECT %s FROM %s WHERE %s LIMIT %s" % (self.stringify(columns), table, self.whereify(where, table), limit)
 		# return the first matching record if it exists, else None
 		resp = self.sf.query(query_string)
+		#Resp Like: OrderedDict([(u'totalSize', 1), (u'done', True), (u'records', [OrderedDict([(u'attributes', OrderedDict([(u'type', u'User_Usage_History_Event_Type__c'), (u'url', u'/services/data/v29.0/sobjects/User_Usage_History_Event_Type__c/a1Y1a000000VqAQEA0')])), (u'Id', u'a1Y1a000000VqAQEA0')])])])
 		if (resp.get('totalSize') > 0):
 			return resp.get('records')[0]
+		#Resp Like: OrderedDict([(u'totalSize', 0), (u'done', True), (u'records', [])])
 		else:
-			return None
+			return {'Id' : None}
 
 	#create a new record of type 'object' with values of type dict
 	# sf_type create returns OrderedDict([(u'id', u'0011a00000YQUo5AAH'), (u'success', True), (u'errors', [])]) on success
