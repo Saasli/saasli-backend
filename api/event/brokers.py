@@ -56,11 +56,25 @@ class EventRequest(Request):
 		except KeyError, e:
 			raise MissingParameterError({'error' : 'No Event Time Specified'})
 
+		# OPTIONAL PARAMS
+		# Additional Event Values
+		try:
+			self.eventvalues = self.body['event'].get('event_values')
+		except Exception, e:
+			raise Exception({'error' : 'Issues with optional parameters'})
+
+		# Specified Saasli Event Id
+		try: 
+			self.eventid = self.body['event'].get('event_id')
+		except Exception, e:
+			raise Exception({'error' : 'Issues with optional parameters'})
+
+
 		# Get the triggering record (if it exists)
 		r_conditions = [{ 'a' : triggeringrecordfield, 'op' : '=', 'b' : triggeringrecordvalue }]
 		self.triggeringrecord = self.salesforce_record(r_conditions, self.triggeringrecordobjecttype)
 
-		# get the user usage history record (if it exists)
+		# get the user usage history type record (if it exists)
 		uuhet_conditions = [{ 'a' : 'Name', 'op' : '=', 'b' : self.eventname }]
 		self.userusagetype = self.salesforce_record(uuhet_conditions, 'User_Usage_History_Event_Type__c')
 		# if the UUH type doesn't exist, make it
