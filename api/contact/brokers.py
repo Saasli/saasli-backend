@@ -42,15 +42,11 @@ class ContactRequest(Request):
 		try:
 			a_value = self.accountvalues[a_field]
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Cooresponding Account Identifying Field "%s" Specified' % a_field})
+			raise MissingParameterError({'error' : 'No Cooresponding Account Identifying Field \'%s\' Specified' % a_field})
 
 		# Generate the account conditions
 		a_conditions = [{ 'a' : a_field, 'op' : '=', 'b' : a_value }]
 		self.account = self.salesforce_record(a_conditions, 'Account')
-
-		# There is no account
-		if self.account.sfid is None:
-			raise SalesforceError({'error' : 'No Account Exists with field: \'%s\' and value: \'%s\'. Saasli requires all contacts to be associated to an Account.' % (a_field, a_value)})
 
 		## Contact
 		# Get the contact values
