@@ -92,6 +92,7 @@ class Request(object):
 		# Get the version of the api
 		try:
 			self.version = context.function_name.split('-')[1] #grab the stage version name from the function name
+			logger.info('API Version: {}'.format(self.version))
 		except AttributeError, e:
 			raise AWSError({'error' : '[500] Fatal Error'})
 
