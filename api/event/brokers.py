@@ -114,24 +114,24 @@ class EventsRequest(Request):
 
 		# pick out unique uuhet names
 		try:
-			self.eventnames = []
+			eventnames = []
 			i = 0
 			for event in self.eventsarray:
-				if event['event']['event_name'] not in self.eventnames:
+				if event['event']['event_name'] not in eventnames:
 					logger.info('Event: {}'.format(event))
-					self.eventnames.append(event['event']['event_name'])
+					eventnames.append(event['event']['event_name'])
 					i += 1
 		except KeyError, e:
 			logger.error('Error: {}'.format(e))
 			raise MissingParameterError({'error' : "Event {} Malformed in Event Array".format(str(i))})
-		logger.info('Unique Events: {}'.format(self.eventnames))
+		logger.info('Unique Events: {}'.format(eventnames))
 
 		# get the uuhet id's for the unique event names
 		try:
 			uuhet_conditions = [{
 					'a' : 'Name',
 					'op' : 'IN',
-					'b' : '({})'.format(stringify(self.eventnames))
+					'b' : '({})'.format(stringify(eventnames))
 			}]
 			uuhet_payload = { 'sf_object_id' : 'User_Usage_History_Event_Type__c', 'sf_select_fields' : ['Name', 'Id'], 'sf_conditions' : uuhet_conditions }
 			uuhet_payload.update(self.credentials.__dict__)
