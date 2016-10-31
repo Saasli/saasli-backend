@@ -14,31 +14,6 @@ def auth(payload):
         sandbox=payload['sandbox']
     )
 
-#print sf.query("Account", "SELECT Id, Name FROM Account LIMIT 10")
-def get(payload, context):
-    sf = auth(payload)
-    return {"results" : sf.query(
-        payload.get('sf_object_id'),
-        payload.get('sf_select_fields'),
-        payload.get('sf_conditions')
-    )}
-
-
-def create(payload, context):
-    sf = auth(payload)
-    return {"results" : sf.insert(
-        payload.get('sf_object_id'),
-        payload.get('sf_records')
-    )}
-
-def update(payload, context):
-    sf = auth(payload)
-    return {"results" : sf.update(
-        payload.get('sf_object_id'),
-        payload.get('sf_records')
-    )}
-
-
 # Query Payload
 # payload = {
 #     "username" : "mc@tts.demo",
@@ -53,6 +28,15 @@ def update(payload, context):
 #         "b" : "Acme 2"
 #     }]
 # }
+#print sf.query("Account", "SELECT Id, Name FROM Account LIMIT 10")
+def get(payload, context):
+    sf = auth(payload)
+    return {"results" : sf.query(
+        payload.get('sf_object_id'),
+        payload.get('sf_select_fields'),
+        payload.get('sf_conditions')
+    )}
+
 
 # # Insert Payload
 # payload = {
@@ -61,7 +45,6 @@ def update(payload, context):
 #     "token" : "3y5J5a9lKjzZ0lhFVEgutEmkd",
 #     "sandbox" : True,
 #     "sf_object_id" : "Account",
-#     "sf_select_fields" : ['Id', 'Name'],
 #     "sf_records" : [
 #         {
 #             "Name" : "New Account Henry",
@@ -73,6 +56,13 @@ def update(payload, context):
 #         }
 #     ]
 # }
+def create(payload, context):
+    sf = auth(payload)
+    return {"results" : sf.insert(
+        payload.get('sf_object_id'),
+        payload.get('sf_records')
+    )}
+
 
 # # Update Payload
 # payload = {
@@ -80,7 +70,6 @@ def update(payload, context):
 #     "password" : "salesforce4",
 #     "token" : "3y5J5a9lKjzZ0lhFVEgutEmkd",
 #     "sandbox" : True,
-#     "sf_object_id" : "Account",
 #     "sf_select_fields" : ['Id', 'Name'],
 #     "sf_records" : [
 #         {
@@ -95,4 +84,16 @@ def update(payload, context):
 #         }
 #     ]
 # }
+
+def update(payload, context):
+    sf = auth(payload)
+    return {"results" : sf.update(
+        payload.get('sf_object_id'),
+        payload.get('sf_records')
+    )}
+
+
+
+
+
 
