@@ -259,6 +259,13 @@ class BulkSalesforceBatch(BulkSalesforceJob):
         self.bsfj = bulksalesforcejob
         self.create_batch(rows)
 
+    # Either performs a json.dumps or does not depending on if it's necessary
+    def format_request(self, request):
+        if (isinstance(request, basestring) or isinstance(request, str)):
+            return request
+        else:
+            return json.dumps(request)
+
     def batch_create_request(self, request):
         headers = { "X-SFDC-Session": self.bsfj.bsf.sessionId, "Content-Type": "application/json" }
         url = "https://{}-api.salesforce.com/services/async/{}/job/{}/batch".format(
@@ -267,13 +274,13 @@ class BulkSalesforceBatch(BulkSalesforceJob):
             self.bsfj.jobId
         )
         print "requesting {}: {}".format(url, json.dumps(request, indent=4))
-        print "REQUEST TYPE: {}".format(type(request) is str)
+        print "REQUEST TYPE: {}".format(isinstance(request, basestring))
         print "DATA: {}".format(request if type(request) is str else json.dumps(request))
         return json.loads(
             requests.post(
                 url = url,
                 headers = headers,
-                data = request if type(request) is str else json.dumps(request),
+                data = self.format_request(request),
                 verify= False
             ).text
         )
