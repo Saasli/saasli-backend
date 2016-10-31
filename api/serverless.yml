@@ -69,14 +69,10 @@ functions:
     handler: encryption/handler.encrypt
     events:
       - http:
+          integration: lambda
           path: encryption/encrypt
           method: post
-          cors: 
-            origins: 
-              - '*'
-            headers:
-              - content-type
-              - x-api-key
+          cors: true
     package:
       include:
         - encryption
@@ -84,14 +80,10 @@ functions:
     handler: encryption/handler.decrypt
     events:
       - http:
+          integration: lambda
           path: encryption/decrypt
           method: post
-          cors: 
-            origins: 
-              - '*'
-            headers:
-              - content-type
-              - x-api-key
+          cors: true
     package:
       include:
         - encryption
@@ -103,6 +95,17 @@ functions:
           integration: lambda
           method: post
           path: event
+    package:
+      include:
+        - event
+  events:
+    timeout: 300
+    handler: event/handler.events
+    events: #confusing, but this is the triggering events not the name of the endpoints
+      - http:
+          integration: lambda
+          method: post
+          path: events
     package:
       include:
         - event

@@ -1,5 +1,5 @@
 import hashlib
-from event.brokers import EventRequest
+from event.brokers import EventRequest, EventsRequest
 from tools import *
 import logging
 logger = logging.getLogger()
@@ -43,4 +43,7 @@ def event(event, context):
 
 
 def events(event, context):
-	return {'Message' : 'Unimplemented'}
+    logger.info('event endpoint hit: {}'.format(event))
+    request = EventsRequest(event, context)
+    return "Thanks"
+    #return functions.request('salesforce-bulk','create', payload)
