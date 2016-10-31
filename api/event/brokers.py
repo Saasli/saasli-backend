@@ -141,40 +141,35 @@ class EventsRequest(Request):
 		except Exception, e:
 			raise Exception({ "error" : "Couldn't Get the UUHET SFIDs"})
 
+		# confirm that all the required uuhet's exist
+		try:
+			uuhet_mappings = {} #create an existing name:id uuhet mapping
+			for uuhet_record in uuhet_id_results:
+				if (uuhet_record['Name'] in eventnames):
+					uuhet_mappings.update({uuhet_record['Name'] : uuhet_record['Id']})
+					eventnames.remove(uuhet_record['Name']) #remove the matched event name from the list
+		except Exception, e:
+			raise Exception({"error" : "Error Mapping User Usage History Event Type Names: {}".format(e)})
 
+		# create the leftover uuhet's
+		try:
+			new_uuhet_records = []
+			for uuhet_name in eventnames:
+				new_uuhet_records.append({'Name' : uuhet_name})
+			new_uuhet_payload = { 'sf_object_id' : 'User_Usage_History_Event_Type__c', 'sf_records' : new_uuhet_records }
+			new_uuhet_payload.update(self.credentials.__dict__)
+			logger.info('Create New Events Payload: {}'.format(new_uuhet_payload))
+			new_uuhet_id_results = self.functions.request('salesforce-bulk', 'create', new_uuhet_payload)["results"]
+			logger.info('Create New Events Payload Results: {}'.format(new_uuhet_id_results))
+		except Exception, e:
+			raise Exception({ "error" : "Error Creating the new Event Types: {} Error: {}".format(eventnames, e)})
 
-
-
-
-
-		# Get the triggering record (if it exists)
-		r_conditions = [{ 'a' : triggeringrecordfield, 'op' : '=', 'b' : triggeringrecordvalue }]
-		self.triggeringrecord = self.salesforce_record(r_conditions, self.triggeringrecordobjecttype)
-
-		# get all the user usage history type records
-		uuhet_conditions = [{ 'a' : 'Name', 'op' : '=', 'b' : self.eventname }]
-		self.userusagetype = self.salesforce_record(uuhet_conditions, 'User_Usage_History_Event_Type__c')
-		# if the UUH type doesn't exist, make it
-		if self.userusagetype.sfid is None:
-			self.userusagetype.create({'Name' : self.eventname})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		# add the newly created uuhet's to the uuhet_mappings
+		try:
+			# NOTE: I'm running under the assumption that the results are in the same order as the insertion request. If not, we'll have to perform yet another query.
+			for new_uuhet_record in new_uuhet_id_results:
+				uuhet_mappings.update({eventnames[0] : new_uuhet_record['id']}) #Creations return lowercase 'id'
+				eventnames.pop(0) #delete the 0th name for the next iteration.
+		except Exception, e:
+			raise Exception({"error" : "Error Mapping New User Usage History Event Type Names: {}".format(e)})
 
