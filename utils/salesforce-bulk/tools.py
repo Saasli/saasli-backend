@@ -188,20 +188,51 @@ class BulkSalesforce(object):
         except Exception, e:
             print "Insert Failure: {}".format(e)
 
+    def upsert(self, object, rows, externalId, chunksize=10000):
+        try:
+            upsert_job = BulkSalesforceJob(self, "upsert", object, externalId=externalId, chunksize=chunksize)
+            total_rows = len(rows)
+            print "Creating {}/{}={} chunks".format(total_rows, chunksize, total_rows / chunksize)
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Job: {}".format(e))
+        
+        try:
+            for i in range(0, total_rows, chunksize):
+                upsert_job.create_batch(rows[i:i + chunksize])
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Batch: {}".format(e))
+
+        try:
+            # Wait for the last batch to finish
+            status = upsert_job.batches[-1].get_status()
+            while (status["state"] != "Completed"):
+                print "Upsert Status: {}".format(status["state"])
+                status = upsert_job.batches[-1].get_status()
+                time.sleep(1)
+            results = []
+            for batch in upsert_job.batches:
+                results += batch.get_results()
+            upsert_job.close_job()
+            return results
+
+        except Exception, e:
+            print "Insert Failure: {}".format(e)
+
 
 
 
 
 
 class BulkSalesforceJob(BulkSalesforce):
-    def __init__(self, bulksalesforce, operation, object, chunksize=0):
+    def __init__(self, bulksalesforce, operation, object, externalId=None, chunksize=0):
         self.chunksize = chunksize
         self.operation = operation
         self.object = object
+        self.externalId = externalId
         self.jobId = None # Will be populated after a job is created.
         self.batches = [] # Will be a list of BulkSalesforceBatch Objects
         self.bsf = bulksalesforce # Grab access to all the initiating class' instance variables
-        self.create_job(self.operation, self.object) # Establish a Salesforce Bulk Job
+        self.create_job(self.operation, self.object, self.externalId) # Establish a Salesforce Bulk Job
 
     # Abstract request to Salesforce Bulk Job API
     def job_request(self, request):
