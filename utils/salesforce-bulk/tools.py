@@ -123,9 +123,21 @@ class BulkSalesforce(object):
         return BulkSalesforceJob(self, operation, object)
 
     def query(self, object, columns, where, chunksize=0):
-        query_string = "SELECT %s FROM %s WHERE %s" % (self.stringify(columns), object, self.whereify(where, object))
-        query_job = BulkSalesforceJob(self, "query", object, chunksize)
-        query_job.create_batch(query_string)
+        try:
+            query_string = "SELECT %s FROM %s WHERE %s" % (self.stringify(columns), object, self.whereify(where, object))
+        except Exception, e:
+            raise Exception("Malformed Query {}".format(e))
+
+        try:
+            query_job = BulkSalesforceJob(self, "query", object, chunksize=chunksize)
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Job {}".format(e))
+
+        try:
+            query_job.create_batch(query_string)
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Batch {}".format(e))
+
         # This is going to only support 100,000 Rows, to properly PK chunk we need https://success.salesforce.com/issues_view?id=a1p300000008ZL6AAM
         try:
             # Wait for the job to finish
@@ -145,11 +157,19 @@ class BulkSalesforce(object):
             print "Query Failure: {}".format(e)
 
     def insert(self, object, rows, chunksize=10000):
-        insert_job = BulkSalesforceJob(self, "insert", object, chunksize)
-        total_rows = len(rows)
-        print "Creating {}/{}={} chunks".format(total_rows, chunksize, total_rows / chunksize)
-        for i in range(0, total_rows, chunksize):
-            insert_job.create_batch(rows[i:i + chunksize])
+        try:
+            insert_job = BulkSalesforceJob(self, "insert", object, chunksize=chunksize)
+            total_rows = len(rows)
+            print "Creating {}/{}={} chunks".format(total_rows, chunksize, total_rows / chunksize)
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Job: {}".format(e))
+        
+        try:
+            for i in range(0, total_rows, chunksize):
+                insert_job.create_batch(rows[i:i + chunksize])
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Batch: {}".format(e))
+
         try:
             # Wait for the last batch to finish
             status = insert_job.batches[-1].get_status()
@@ -167,11 +187,19 @@ class BulkSalesforce(object):
             print "Insert Failure: {}".format(e)
 
     def update(self, object, rows, chunksize=10000):
-        update_job = BulkSalesforceJob(self, "update", object, chunksize)
-        total_rows = len(rows)
-        print "Creating {}/{}={} chunks".format(total_rows, chunksize, total_rows / chunksize)
-        for i in range(0, total_rows, chunksize):
-            update_job.create_batch(rows[i:i + chunksize])
+        try:
+            update_job = BulkSalesforceJob(self, "update", object, chunksize=chunksize)
+            total_rows = len(rows)
+            print "Creating {}/{}={} chunks".format(total_rows, chunksize, total_rows / chunksize)
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Job: {}".format(e))
+        
+        try:
+            for i in range(0, total_rows, chunksize):
+                update_job.create_batch(rows[i:i + chunksize])
+        except Exception, e:
+            raise Exception("Unable to Create Salesforce Batch: {}".format(e))
+
         try:
             # Wait for the last batch to finish
             status = update_job.batches[-1].get_status()
@@ -255,7 +283,7 @@ class BulkSalesforceJob(BulkSalesforce):
             ).text
         )
 
-    def create_job(self, operation, object, externalId = None):
+    def create_job(self, operation, object, externalId=None):
         request = {
             "operation" : operation,
             "object" : object,
@@ -265,12 +293,10 @@ class BulkSalesforceJob(BulkSalesforce):
             request.update({"externalIdFieldName" : externalId})
         # Fire the create job request                   
         response = self.job_request(request)
-        print "create job resp: {}".format(json.dumps(response, indent=4))
-        try:
+        if response.get('exceptionCode') is not None: # If there is an exception code, then the job failed
+            raise Exception(response['exceptionMessage'])
+        else: #otherwise we're good, assign the jobid as an instance variable
             self.jobId = response['id']
-            print "created job successfully"
-        except Exception, e:
-            print "failed creating job"
 
 
     def close_job(self):
@@ -340,10 +366,10 @@ class BulkSalesforceBatch(BulkSalesforceJob):
 
     def create_batch(self, payload):
         response = self.batch_create_request(payload)
-        try:
+        if response.get('exceptionCode') is not None: # If there is an exception code, then the batch failed
+            raise Exception(response['exceptionMessage'])
+        else: #otherwise we're good, assign the batchid as an instance variable
             self.batchId = response['id']
-        except Exception, e:
-            print "Batch Creation Failed: {}".format(json.dumps(response, indent=4))
 
     def get_status(self):
         return self.batch_status_request(result=False)
