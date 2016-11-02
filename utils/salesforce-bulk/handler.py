@@ -32,9 +32,9 @@ def auth(payload):
 def get(payload, context):
     sf = auth(payload)
     return {"results" : sf.query(
-        payload.get('sf_object_id'),
-        payload.get('sf_select_fields'),
-        payload.get('sf_conditions')
+        payload['sf_object_id'],
+        payload['sf_select_fields'],
+        payload['sf_conditions']
     )}
 
 
@@ -59,8 +59,8 @@ def get(payload, context):
 def create(payload, context):
     sf = auth(payload)
     return {"results" : sf.insert(
-        payload.get('sf_object_id'),
-        payload.get('sf_records')
+        payload['sf_object_id'],
+        payload['sf_records']
     )}
 
 
@@ -88,8 +88,16 @@ def create(payload, context):
 def update(payload, context):
     sf = auth(payload)
     return {"results" : sf.update(
-        payload.get('sf_object_id'),
-        payload.get('sf_records')
+        payload['sf_object_id'],
+        payload['sf_records']
+    )}
+
+def upsert(payload, context):
+    sf = auth(payload)
+    return {"results" : sf.upsert(
+        payload['sf_object_id'],
+        payload['sf_records'],
+        payload['external_id']
     )}
 
 
