@@ -34,7 +34,7 @@ class Microservice(object):
 			Payload=json.dumps(payload).encode()
 		)['Payload'].read())
 		logger.info('Raw Response. {}'.format(response))
-		if response.get('errorType', False): # Is there an errorType? 
+		if (response is not None and response.get('errorType', False)): # Is there an errorType (handle None value case)? 
 			logger.info('Response Failed: {}'.format(response))
 			response.pop('stackTrace', None) # Get rid of the stackTrace
 			raise Exception(response['errorMessage']) # Throw the error out to the client
@@ -55,6 +55,10 @@ class Credentials(object):
 			'tablename' : 'clients'
 		}
 		encryptedCredentials = functions.request('dynamodb','getitem', dynamoPayload)
+		
+		if encryptedCredentials is None:
+			raise CredentialError({'error' : 'client id not found'}) #Take a look to see if the client id was found or not
+
 		logger.info('Retrieved Encrypted Credentials Successfully.')
 		# Decrypt the client credentials
 		kmsPayload = { 
