@@ -145,7 +145,7 @@ class BulkSalesforce(object):
             while (status["state"] != "Completed"):
                 if status["state"] == "Failed":
                     query_job.abort_job()
-                    return
+                    raise Exception(status)
                 print "Query Status: {}".format(status["state"])
                 status = query_job.batches[0].get_status()
                 time.sleep(1)
@@ -176,7 +176,7 @@ class BulkSalesforce(object):
             while (status["state"] != "Completed"):
                 if status["state"] == "Failed":
                     insert_job.abort_job()
-                    return status
+                    raise Exception(status)
                 print "Insert Status: {}".format(status["state"])
                 status = insert_job.batches[-1].get_status()
                 time.sleep(1)
@@ -209,7 +209,7 @@ class BulkSalesforce(object):
                 print "Update Status: {}".format(status["state"])
                 if status["state"] == "Failed":
                     update_job.abort_job()
-                    return
+                    raise Exception(status)
                 status = update_job.batches[-1].get_status()
                 time.sleep(1)
             results = []
