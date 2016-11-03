@@ -46,6 +46,7 @@ def events(event, context):
 	logger.info('event endpoint hit: {}'.format(event))
 	request = EventsRequest(event, context)
 	sf_records = [] #instantiate the array holding all the objects for upsert
+	failed = [] #instantiate array of events unable to be upserted.
 	i = 0 # keep a count of this procedure for error clarity
 	
 	# Build the sf_records array for bulk upsertion
@@ -93,36 +94,28 @@ def events(event, context):
 					raise MissingParameterError({'error' : 'Malformed \'event_values\' in event {}. Ensure values are a list of Salesforce API Names to Value pairs.'.format(i)})
 
 				sf_records.append(record) #append the formatted record to the sf_records list
+			else:
+				event.update({'reason' : 'No associating record \'{}\' found in \'{}\' field on \'{}\' object'.format(event['sf_field_value'], request.triggeringrecordfield, request.triggeringrecordobjecttype)})
+				failed.append(event)
 		except Exception, e:
+			event.update({'reason' : e})
+			failed.append(event)
 			logger.info('Skipping Event {} for error {}'.format(i, e))
 			pass
 		i += 1 # increment the event counter
 
+	# Manufacture the payload destined for salesforce-bulk
 	events_payload = { 
 		'sf_object_id' : 'User_Usage_History__c', # inserting into the User Usage History Object
 		'sf_records' : sf_records,
 		'external_id' : 'Saasli_Event_Id__c'
 	}
-
 	events_payload.update(request.credentials.__dict__)
-	print json.dumps(events_payload, indent=4)
-	return request.functions.request('salesforce-bulk', 'upsert', events_payload)
-
-
-    	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	# Fire the request
+	response = request.functions.request('salesforce-bulk', 'upsert', events_payload)
+	# Add the failed events to the response
+	return {
+		'result' : '{}/{} Processed Successfully'.format(len(response['results']), len(request.eventsarray)),
+		'successful' : response['results'],
+		'failed' : failed
+	}
