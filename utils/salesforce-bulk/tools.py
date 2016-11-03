@@ -144,7 +144,7 @@ class BulkSalesforce(object):
             status = query_job.batches[0].get_status()
             while (status["state"] != "Completed"):
                 if status["state"] == "Failed":
-                    query_job.close_job() #TODO: Build an abort
+                    query_job.abort_job()
                     return
                 print "Query Status: {}".format(status["state"])
                 status = query_job.batches[0].get_status()
@@ -154,7 +154,7 @@ class BulkSalesforce(object):
             return results
 
         except Exception, e:
-            print "Query Failure: {}".format(e)
+            raise Exception("Query Failure: {}".format(e))
 
     def insert(self, object, rows, chunksize=10000):
         try:
@@ -174,6 +174,9 @@ class BulkSalesforce(object):
             # Wait for the last batch to finish
             status = insert_job.batches[-1].get_status()
             while (status["state"] != "Completed"):
+                if status["state"] == "Failed":
+                    insert_job.abort_job()
+                    return status
                 print "Insert Status: {}".format(status["state"])
                 status = insert_job.batches[-1].get_status()
                 time.sleep(1)
@@ -184,7 +187,7 @@ class BulkSalesforce(object):
             return results
 
         except Exception, e:
-            print "Insert Failure: {}".format(e)
+           raise Exception("Insert Failure: {}".format(e))
 
     def update(self, object, rows, chunksize=10000):
         try:
@@ -193,7 +196,6 @@ class BulkSalesforce(object):
             print "Creating {}/{}={} chunks".format(total_rows, chunksize, total_rows / chunksize)
         except Exception, e:
             raise Exception("Unable to Create Salesforce Job: {}".format(e))
-        
         try:
             for i in range(0, total_rows, chunksize):
                 update_job.create_batch(rows[i:i + chunksize])
@@ -205,6 +207,9 @@ class BulkSalesforce(object):
             status = update_job.batches[-1].get_status()
             while (status["state"] != "Completed"):
                 print "Update Status: {}".format(status["state"])
+                if status["state"] == "Failed":
+                    update_job.abort_job()
+                    return
                 status = update_job.batches[-1].get_status()
                 time.sleep(1)
             results = []
@@ -214,7 +219,7 @@ class BulkSalesforce(object):
             return results
 
         except Exception, e:
-            print "Insert Failure: {}".format(e)
+            raise Exception("Update Failure: {}".format(e))
 
     def upsert(self, object, rows, externalId, chunksize=10000):
         try:
@@ -235,6 +240,9 @@ class BulkSalesforce(object):
             status = upsert_job.batches[-1].get_status()
             while (status["state"] != "Completed"):
                 print "Upsert Status: {}".format(status["state"])
+                if status["state"] == "Failed":
+                    upsert_job.abort_job()
+                    raise Exception(status)
                 status = upsert_job.batches[-1].get_status()
                 time.sleep(1)
             results = []
@@ -244,7 +252,7 @@ class BulkSalesforce(object):
             return results
 
         except Exception, e:
-            print "Insert Failure: {}".format(e)
+            raise Exception("Upsert Failure: {}".format(e))
 
 
 
@@ -302,6 +310,12 @@ class BulkSalesforceJob(BulkSalesforce):
     def close_job(self):
         response = self.job_request({
             "state" : "Closed"
+        })
+        print json.dumps(response, indent=4)
+
+    def abort_job(self):
+        response = self.job_request({
+            "state" : "Aborted"
         })
         print json.dumps(response, indent=4)
 
@@ -382,22 +396,3 @@ class BulkSalesforceBatch(BulkSalesforceJob):
         resultId = self.batch_status_request(result=True)[0]
         logger.info('Query Results Id. {}'.format(resultId))
         return self.batch_status_request(result=True,resultId=resultId)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

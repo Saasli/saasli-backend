@@ -170,11 +170,3 @@ class SFRecord(object):
 		updatePayload.update(self.credentials.__dict__) #add in the creds
 		print updatePayload
 		return self.functions.request('salesforce-rest', 'update', updatePayload)
-
-
-
-
-
-
-
-
