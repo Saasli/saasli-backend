@@ -5,8 +5,16 @@ from tools import *
 def stringify(array):
     out = ""
     for item in array:
-        out += ", '%s'" % item
+        out += ", {}".format(item) if isnum(item) else ", '{}'".format(item) #Don't wrap integers in quotes
     return out[1:] #greasy skip the first comma
+
+#is the str actually an int?
+def isnum(str):
+	try:
+		float(str)
+		return True
+	except:
+		return False
 # Expecting to see 
 # Body
 # {
@@ -210,18 +218,26 @@ class EventsRequest(Request):
 			triggering_records_id_results = self.functions.request('salesforce-bulk', 'get', triggering_records_payload)["results"]
 			logger.info('Triggering Record Payload Results: {}'.format(triggering_records_id_results))
 		except Exception, e:
-			raise Exception({ "error" : "Couldn't Get the triggering records"})
+			raise Exception({ "error" : "Couldn't Get the triggering records: {}".format(e)})
 
 		# b) confirm that all the triggering records do exist
 		try:
 			self.triggering_records_mappings = {} #create a mapping of sf_field_value:Id for each event
-			fieldvalues_lower = map(unicode.lower,fieldvalues) #clone a lowercase version for matching purposes
-			for triggering_record in triggering_records_id_results:
-				if (triggering_record[self.triggeringrecordfield].lower() in fieldvalues_lower): #It is possible for SFDC to return matchs with different cases. We'll compare case insensitive
-					index = fieldvalues_lower.index(triggering_record[self.triggeringrecordfield].lower()) #get the index in the lowercase list of the matching fieldvalue
-					self.triggering_records_mappings.update({fieldvalues[index] : triggering_record['Id']})
-					fieldvalues.pop(index) #get rid of the matched element from the fieldvalues
-					fieldvalues_lower.pop(index) #also apply to it's lowercase clone
+			if isinstance(fieldvalues[0], basestring): #if we're dealing with string identifiers we need to be a bit more careful
+				fieldvalues_lower = map(unicode.lower,fieldvalues) #clone a lowercase version for matching purposes
+				for triggering_record in triggering_records_id_results:
+					if (triggering_record[self.triggeringrecordfield].lower() in fieldvalues_lower): #It is possible for SFDC to return matchs with different cases. We'll compare case insensitive
+						index = fieldvalues_lower.index(triggering_record[self.triggeringrecordfield].lower()) #get the index in the lowercase list of the matching fieldvalue
+						self.triggering_records_mappings.update({fieldvalues[index] : triggering_record['Id']})
+						fieldvalues.pop(index) #get rid of the matched element from the fieldvalues
+						fieldvalues_lower.pop(index) #also apply to it's lowercase clone
+			else:
+				for triggering_record in triggering_records_id_results:
+					if (triggering_record[self.triggeringrecordfield] in fieldvalues): 
+						index = fieldvalues.index(triggering_record[self.triggeringrecordfield])
+						self.triggering_records_mappings.update({fieldvalues[index] : triggering_record['Id']})
+						fieldvalues.pop(index) #get rid of the matched element from the fieldvalues
+
 			print self.triggering_records_mappings
 		except Exception, e:
 			raise Exception({"error" : "Error Mapping User Usage History Event Type Names: {}".format(e)})
