@@ -104,16 +104,20 @@ def events(event, context):
 			pass
 		i += 1 # increment the event counter
 
-	# Manufacture the payload destined for salesforce-bulk
-	events_payload = { 
-		'sf_object_id' : 'User_Usage_History__c', # inserting into the User Usage History Object
-		'sf_records' : sf_records,
-		'external_id' : 'Saasli_Event_Id__c'
-	}
-	events_payload.update(request.credentials.__dict__)
-	# Fire the request
-	response = request.functions.request('salesforce-bulk', 'upsert', events_payload)
-	# Add the failed events to the response
+	if len(sf_records) > 0: #if there are no records to upsert, don't bother trying
+		# Manufacture the payload destined for salesforce-bulk
+		events_payload = { 
+			'sf_object_id' : 'User_Usage_History__c', # inserting into the User Usage History Object
+			'sf_records' : sf_records,
+			'external_id' : 'Saasli_Event_Id__c'
+		}
+		events_payload.update(request.credentials.__dict__)
+		# Fire the request
+		response = request.functions.request('salesforce-bulk', 'upsert', events_payload)
+		# Add the failed events to the response
+	else:
+		response = {'results' : []}
+
 	return {
 		'result' : '{}/{} Processed Successfully'.format(len(response['results']), len(request.eventsarray)),
 		'successful' : response['results'],
