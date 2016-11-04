@@ -1,0 +1,43 @@
+service: mysql-poll
+
+provider:
+  name: aws
+  runtime: python2.7
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:GetFunction
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+      Resource: arn:aws:lambda:* #let this guy call all the lambda
+
+
+resources:
+  Resources:
+    AWSLambdaVPCAccessExecutionRole: ${file(./vpc.yml):AWSLambdaVPCAccessExecutionRole}
+
+package: # Ensure only the site-packages are included
+  include:
+    - venv/lib/python2.7/site-packages
+  exclude:
+    - venv
+
+functions:
+  poll:
+    handler: handler.poll
+    timeout: 300
+    vpc:
+      securityGroupIds:
+        - sg-edbb7d90
+      subnetIds:
+        - subnet-2f45d366
+    events:
+      # - schedule: #saasli (mc@tts.demo)
+      #     rate: rate(1 hour)
+      #     enabled: true
+      # - schedule: #silvercloud-sandbox
+      #     rate: rate(1 minute)
+      #     enabled: true
+      # - schedule: #silvercloud-prod
+      #     rate: rate(1 minute)
+      #     enabled: false
