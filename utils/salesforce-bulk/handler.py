@@ -31,11 +31,12 @@ def auth(payload):
 #print sf.query("Account", "SELECT Id, Name FROM Account LIMIT 10")
 def get(payload, context):
     sf = auth(payload)
-    return {"results" : sf.query(
+    response = sf.query(
         payload['sf_object_id'],
         payload['sf_select_fields'],
         payload['sf_conditions']
-    )}
+    )
+    return {"results" : response if response is not None else []} #toss back an empty array instead of just 'None'
 
 
 # # Insert Payload
