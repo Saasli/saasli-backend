@@ -60,7 +60,7 @@ def events(event, context):
 			if triggering_record_id is not None: # If there isn't a record to associate it to, then we're done here.
 				# Set the triggering record id
 				try:
-					record.update({'{}__c'.format(request.triggeringrecordobjecttype) : triggering_record_id}) #Set the Polymorphic relating triggering record id
+					record.update({request.triggeringlookupfield : triggering_record_id}) #Set the Polymorphic relating triggering record id
 				except Exception, e:
 					raise MissingParameterError({'error' : 'Missing or Malformed \'sf_field_value\' in event {}'.format(i)})
 
