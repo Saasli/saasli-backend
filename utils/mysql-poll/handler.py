@@ -6,12 +6,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def poll(event, context):
-    logger.info('Silvercloud MySql Poll Event: {}'.format(event))
-    logger.info('Silvercloud MySql Poll Context: {}'.format(context))
-
     # Get a class instance of lambda microservice
-    print event['version']
-    print event['clientid']
     try:
         functions = Microservice(event['version']) # get a class level microservice client
     except:

@@ -106,19 +106,25 @@ class EventsRequest(Request):
 		try:
 			self.triggeringrecordobjecttype = self.body['sf_object_id']
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Triggering Object Type Specified'})
+			raise MissingParameterError({'error' : 'No Triggering Object Type Specified (sf_object_id)'})
 
 		# get the object search field
 		try:
 			self.triggeringrecordfield = self.body['sf_field_id']
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Triggering Object Identifying Field Specified'})
+			raise MissingParameterError({'error' : 'No Triggering Object Identifying Field Specified (sf_field_id)'})
 
-		# Get the search field value
+		# get the event lookup id
+		try:
+			self.triggeringlookupfield = self.body['sf_lookup_id']
+		except KeyError, e:
+			raise MissingParameterError({'error' : 'No Triggering Object Lookup Field on Event Record Specified (sf_lookup_id)'})
+
+		# Get the events
 		try:
 			self.eventsarray = self.body['events']
 		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Events Array Specified'})
+			raise MissingParameterError({'error' : 'No Events Array Specified (events)'})
 
 
 		####
