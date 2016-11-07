@@ -14,7 +14,7 @@ def poll(event, context):
 
     # Get the SFDC credentials
     try:
-        databaseCredentials = DatabaseCredentials(event['clientid'], functions)
+        databaseCredentials = DatabaseCredentials(event['client_id'], functions)
     except:
         raise Exception("error" , "couldn't get db creds")
 
@@ -26,34 +26,36 @@ def poll(event, context):
         password=databaseCredentials.password,
         db=databaseCredentials.db,
         charset=databaseCredentials.charset,
+        port=3306,
         cursorclass=pymysql.cursors.DictCursor
     )
 
     try:
         logger.info("Opening MySQL Cursor.")
         with connection.cursor() as cursor:
-            cursor.execute(databaseCredentials.query)
+            cursor.execute(event['query'])
             rows = cursor.fetchall()
             events = [] #instantiate the events array
             for row in rows: #build the events array
-                print row
+                ev = {}
+                for key, value in event['event_values'].items(): #Build the required event values
+                    ev.update({ key : row[value] })
                 events.append({
                     "sf_field_value" : row['id'],
                         "event" : {
-                            "event_name" : "Page Views",
+                            "event_name" : event['event_name'],
                             "event_timestamp" : int(time.time()),
-                            "event_values" : {
-                                "Views__c" : row['pageviews']
-                            }
+                            "event_values" : ev
                         }
                 })
 
             insert_payload = {
                 "path" : {}, #required to pass the Request
                 "body" : {
-                    "client_id" : event['clientid'],
-                    "sf_object_id" : "Account",
-                    "sf_field_id" : "Breeze_Client_Id__c",
+                    "client_id" : event['client_id'],
+                    "sf_object_id" : event['sf_object_id'],
+                    "sf_field_id" : event['sf_field_id'],
+                    "sf_lookup_id" : event['sf_lookup_id'],
                     "events" : events
                 }
             }
