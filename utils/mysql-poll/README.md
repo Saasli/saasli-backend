@@ -25,13 +25,14 @@ The following payload is expected by the microservice.
 }
 ```
 
-| Parameter | Description | Optional |
+| Parameter | Description | Inclusion |
 | --------- | ----------- | -------- |
-| client_id | The id of the client in the `clients` table in DynamoDB | `false` |
-| version | The Version of the mysql poll that is to be used. Cooresponds to the `stage` of the function | `false` |
-| event_values | An SFDC Field API Name to MySQL Column mapping of additional values that shall be created with each event record. NOTE: That field must be created in SFDC, and that column name must exist in the MySQL query results | `true` |
-| event_name | The actual name of the event that has happened. A new UUHET record will be created if one doesn't already exist. | `false` |
-| mysql_id_column | "The column name in the MySQL query that holds the identifying triggering record value (the `sf_field_value` to the later defined `sf_field_id`)  | `false` |
-| sf_object_id | The SFDC Object of the record that triggered the event, and will be be associated to it. | `false` | sf_field_id | The SFDC Field API name of the field that will be used to identify the triggering record. The value of which exists in the column specified by `mysql_id_column` | `false` |
-| sf_lookup_id | The SFDC API field name of the field on the Event record that will lookup the triggering sf object. It is typically named the same as the `sf_object_id`, however this offers the ability to use a different lookup field if one is so defined. | `false` |
-| query | A Valid SQL query that must return an id column as defined by `mysql_id_column` and any columns defined as values in the `event_values` object | `false` |
+| client_id | The id of the client in the `clients` table in DynamoDB | &#x1F534;`required` |
+| version | The Version of the mysql poll that is to be used. Cooresponds to the `stage` of the function | &#x1F534;`required` |
+| event_name | The actual name of the event that has happened. A new UUHET record will be created if one doesn't already exist. | &#x1F534;`required` |
+| mysql_id_column | "The column name in the MySQL query that holds the identifying triggering record value (the `sf_field_value` to the later defined `sf_field_id`)  | &#x1F534;`required` |
+| sf_object_id | The SFDC Object of the record that triggered the event, and will be be associated to it. | &#x1F534;`required` | sf_field_id | The SFDC Field API name of the field that will be used to identify the triggering record. The value of which exists in the column specified by `mysql_id_column` | &#x1F534;`required` |
+| sf_lookup_id | The SFDC API field name of the field on the Event record that will lookup the triggering sf object. It is typically named the same as the `sf_object_id`, however this offers the ability to use a different lookup field if one is so defined. | &#x1F534;`required` |
+| query | A Valid SQL query that must return an id column as defined by `mysql_id_column` and any columns defined as values in the `event_values` object | &#x1F534;`required` |
+| event_values | An SFDC Field API Name to MySQL Column mapping of additional values that shall be created with each event record. NOTE: That field must be created in SFDC, and that column name must exist in the MySQL query results | `optional` |
+| event_id | The `events` endpoint has an optional paramter to override the default `Saasli_Event_Id__c` that is generated. This allows you to pass through that override. | `optional` |
