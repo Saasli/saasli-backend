@@ -19,34 +19,45 @@ def poll(event, context):
         raise Exception("error" , "couldn't get db creds")
 
 
-    #Connect to the database
-    connection = pymysql.connect(
-        host=databaseCredentials.host,
-        user=databaseCredentials.user,
-        password=databaseCredentials.password,
-        db=databaseCredentials.db,
-        charset=databaseCredentials.charset,
-        port=3306,
-        cursorclass=pymysql.cursors.DictCursor
-    )
-
     try:
+        logger.info("Creating '{}' Events".format(event['event_name']))
+        #Connect to the database
+        connection = pymysql.connect(
+            host=databaseCredentials.host,
+            user=databaseCredentials.user,
+            password=databaseCredentials.password,
+            db=databaseCredentials.db,
+            charset=databaseCredentials.charset,
+            port=3306,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+
         logger.info("Opening MySQL Cursor.")
         with connection.cursor() as cursor:
             cursor.execute(event['query'])
             rows = cursor.fetchall()
             events = [] #instantiate the events array
             for row in rows: #build the events array
-                ev = {}
-                for key, value in event['event_values'].items(): #Build the required event values
-                    ev.update({ key : row[value] })
+                # Base Event
+                e = {
+                    "event_name" : event['event_name'],
+                    "event_timestamp" : int(time.time())
+                }
+                # Optional : Event Values
+                if event.get('event_values') is not None:
+                    ev = {}
+                    for key, value in event['event_values'].items(): #Build the required event values
+                        ev.update({ key : row[value] })
+                    e["event_values"] = ev
+
+                # Optional : Event Custom id
+                if event.get('event_id') is not None:
+                    e["event_id"] = row[event['event_id']]
+
+                # Add in the event object
                 events.append({
-                    "sf_field_value" : row['id'],
-                        "event" : {
-                            "event_name" : event['event_name'],
-                            "event_timestamp" : int(time.time()),
-                            "event_values" : ev
-                        }
+                    "sf_field_value" : row[event['mysql_id_column']],
+                    "event" : e
                 })
 
             insert_payload = {
