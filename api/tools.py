@@ -1,7 +1,5 @@
 # Thank you http://stackoverflow.com/questions/36784925/how-to-get-return-response-from-aws-lambda-function
-import boto3
-import json
-import logging
+import boto3, botocore, json, logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -19,7 +17,8 @@ class CredentialError(Exception):
 
 class Microservice(object):
 	def __init__(self, version):
-		self.client = boto3.client('lambda')
+		config = botocore.config.Config(connect_timeout=500, read_timeout=520)
+		self.client = boto3.client('lambda', config=config)
 		self.version = version
 
 	# Given the name of a lambda function (string) and 
