@@ -48,7 +48,7 @@ def events(event, context):
 	sf_records = [] #instantiate the array holding all the objects for upsert
 	failed = [] #instantiate array of events unable to be upserted.
 	i = 0 # keep a count of this procedure for error clarity
-	
+
 	# Build the sf_records array for bulk upsertion
 	for event in request.eventsarray:
 		record = {} # instantiate the record

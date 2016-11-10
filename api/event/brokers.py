@@ -142,10 +142,8 @@ class EventsRequest(Request):
 			i = 0
 			for event in self.eventsarray:
 				if event['event']['event_name'] not in eventnames:
-					logger.info('Event: {}'.format(event))
 					eventnames.append(event['event']['event_name'])
 				if event['sf_field_value'] not in fieldvalues:
-					logger.info('Field Value: {}'.format(event))
 					fieldvalues.append(event['sf_field_value'])
 				i += 1
 		except KeyError, e:
@@ -237,7 +235,7 @@ class EventsRequest(Request):
 						self.triggering_records_mappings.update({fieldvalues[index] : triggering_record['Id']})
 						fieldvalues.pop(index) #get rid of the matched element from the fieldvalues
 						fieldvalues_lower.pop(index) #also apply to it's lowercase clone
-			else:
+			else: #otherwise we need not worry about case, and treat normally
 				for triggering_record in triggering_records_id_results:
 					if (triggering_record[self.triggeringrecordfield] in fieldvalues): 
 						index = fieldvalues.index(triggering_record[self.triggeringrecordfield])

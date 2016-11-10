@@ -9,8 +9,8 @@ def poll(event, context):
     # Get a class instance of lambda microservice
     try:
         functions = Microservice(event['version']) # get a class level microservice client
-    except:
-        raise Exception({"error" , "couldn't instantiate functions"})
+    except Exception, e:
+        raise Exception({"error" , "couldn't instantiate functions {}".format(e)})
 
     # Get the SFDC credentials
     try:
