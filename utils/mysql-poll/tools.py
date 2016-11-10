@@ -1,10 +1,13 @@
-import boto3, json, logging
+import boto3, botocore, json, logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
+
 class Microservice(object):
 	def __init__(self, version):
-		self.client = boto3.client('lambda')
+		config = botocore.config.Config(connect_timeout=500, read_timeout=520)
+		self.client = boto3.client('lambda', config=config)
 		self.version = version
 
 	# Given the name of a lambda function (string) and 
