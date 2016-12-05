@@ -1,9 +1,20 @@
 import sys
 from tools import *
-sys.path.insert(0, './mysql-poll-venv/lib/python2.7/site-packages/') #TODO: Keep an eye out for serverless recognizing venvs and packaging them automatically
-import logging, json, pymysql.cursors, requests, time
+sys.path.insert(0, './venv/lib/python2.7/site-packages/') #TODO: Keep an eye out for serverless recognizing venvs and packaging them automatically
+import logging, json, pymysql.cursors, requests, datetime, time, re
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Check if value is a datetime.datetime
+def ismysqldatetime(val):
+    try:
+        return isinstance(val, datetime.date)
+    except: #Catch any other format
+        return False
+
+# Take a datetime, return a unix timestamp int
+def datetime2unix(date):
+    return int(time.mktime(date.timetuple()))
 
 def poll(event, context):
     # Get a class instance of lambda microservice
