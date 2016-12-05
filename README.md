@@ -37,6 +37,70 @@ pip install virtualenv
 
 Serverless names services with the following scheme {service_name}-{stage}-{function_name}. We strip the name of the stage out assuming this convention so it's imparative that service names, stage names and function names only contain alphanumeric characters. 
 
+### Creating a Service
+
+The serverless CLI makes this simple and quick. The first step is to create a new directory to house the service. There are two different flavours of services in this repo, `utils` and `api`. The `api` is actually one big service in itself, so adding new functionality to it isn't _technically_ creating a service rather a new function, but we'll cover that here.
+
+#### Creating a new API function
+
+1) Change into the `api` directory and create a new folder and files. The folder structure attempts to mirror how this will ultimately appear in the API Gateway.
+
+```
+cd ./api/
+mkdir <FUNCTION_NAME>
+vim ./handler.py
+```
+paste in the following:
+
+```
+from tools import *
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def <FUNCTION_NAME>(event, context):
+	return {'Message' : 'Unimplemented'}
+```
+
+exit vim with `<ESCAPE> + :wq`
+
+
+2) Ammend the `serverless.yml` to encompass the new function. Open up the `serverless.yml` in a text editor and add the following (FUNCTION_NAME must match the name of the folder as defined in step 1)) In the `functions` array append the following.
+
+```
+<FUNCTION_NAME>:
+    timeout: 60
+    handler: <FUNCTION_NAME>/handler.<FUNCTION_NAME>
+    events:
+      - http:
+          integration: lambda
+          method: post
+          path: <FUNCTION_NAME>/
+    package:
+      include:
+        - <FUNCTION_NAME>
+```
+
+*NOTE:* All the other functions within `api` have a `brokers.py` file to handle the processing of the json payload. It is reccomended that this convention be followed, however not compulsory.
+
+#### Creating a new `utils` service
+
+1) Navigate to the `utils` directory, and create a new directory with the desired service name.
+
+```
+cd ./utils
+mkdir <SERVICE_NAME>
+cd <SERVICE_NAME>
+```
+
+2) Use the serverless CLI to construct the new service
+
+```
+serverless create --template aws-python --name <SERVICE_NAME>
+```
+
+*NOTE* Other templates for Node.js and Java exist, however python is the preferred language of this repo.
+
 ### Virtual Environments
 
 Serverless upon deployment will zip up everything it it's directory. Then, when live on Lambda it will only have access to anything in that zip. This is a problem if your code needs some python libraries because beyond a few pretty generic ones like `boto3`, none are included. To get around that, and have only files required for a given service be zipped, we use virtual environments. 
@@ -74,7 +138,7 @@ deactivate
 If you need to add some new python libraries make sure that you're in the correct virtual env for the given service and that you're running 
 ```
 pip install |LIBRARY_NAME|
-pip freeze >> requirements.txt
+pip freeze > requirements.txt
 ```
 
 ### Contracts

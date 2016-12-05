@@ -18,7 +18,6 @@ def poll(event, context):
     except:
         raise Exception("error" , "couldn't get db creds")
 
-
     try:
         logger.info("Creating '{}' Events".format(event['event_name']))
         #Connect to the database
