@@ -46,41 +46,49 @@ def poll(event, context):
         with connection.cursor() as cursor:
             cursor.execute(event['query'])
             rows = cursor.fetchall()
-            events = [] #instantiate the events array
-            for row in rows: #build the events array
-                # Base Event
-                e = {
-                    "event_name" : event['event_name'],
-                    "event_timestamp" : int(time.time())
+
+            if len(rows) > 0:
+                logger.info("MySQL Rows: {}".format(rows))
+                events = [] #instantiate the events array
+                for row in rows: #build the events array
+                    # Base Event
+                    e = {
+                        "event_name" : event['event_name'],
+                        "event_timestamp" : int(time.time())
+                    }
+                    # Optional : Event Values
+                    if event.get('event_values') is not None:
+                        ev = {}
+                        for key, value in event['event_values'].items(): #Build the required event values
+                            val = row[value]
+                            if ismysqldatetime(row[value]): #if this representative of a date or datetime
+                                val = datetime2unix(row[value]) #convert it to a unix stamp
+                            ev.update({ key : val })
+                        e["event_values"] = ev
+
+                    # Optional : Event Custom id
+                    if event.get('event_id') is not None:
+                        e["event_id"] = row[event['event_id']]
+
+                    # Add in the event object
+                    events.append({
+                        "sf_field_value" : row[event['mysql_id_column']],
+                        "event" : e
+                    })
+
+                insert_payload = {
+                    "path" : {}, #required to pass the Request
+                    "body" : {
+                        "client_id" : event['client_id'],
+                        "sf_object_id" : event['sf_object_id'],
+                        "sf_field_id" : event['sf_field_id'],
+                        "sf_lookup_id" : event['sf_lookup_id'],
+                        "events" : events
+                    }
                 }
-                # Optional : Event Values
-                if event.get('event_values') is not None:
-                    ev = {}
-                    for key, value in event['event_values'].items(): #Build the required event values
-                        ev.update({ key : row[value] })
-                    e["event_values"] = ev
-
-                # Optional : Event Custom id
-                if event.get('event_id') is not None:
-                    e["event_id"] = row[event['event_id']]
-
-                # Add in the event object
-                events.append({
-                    "sf_field_value" : row[event['mysql_id_column']],
-                    "event" : e
-                })
-
-            insert_payload = {
-                "path" : {}, #required to pass the Request
-                "body" : {
-                    "client_id" : event['client_id'],
-                    "sf_object_id" : event['sf_object_id'],
-                    "sf_field_id" : event['sf_field_id'],
-                    "sf_lookup_id" : event['sf_lookup_id'],
-                    "events" : events
-                }
-            }
-            functions.request('api', 'events', insert_payload)
+                functions.request('api', 'events', insert_payload)
+            else:
+                logger.info("No Rows to insert for query: {}".format(event['query']))
 
 
     finally: #Kill the connection even if an exception is thrown
