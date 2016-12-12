@@ -109,3 +109,14 @@ functions:
     package:
       include:
         - event
+  objects:
+    timeout: 300
+    handler: object/handler.objects
+    events:
+      - http:
+          integration: lambda
+          method: post
+          path: "{client_id}/bulk/{object}/{unique_id}"
+    package:
+      include:
+        - object
