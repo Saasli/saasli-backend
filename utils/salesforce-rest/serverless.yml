@@ -45,6 +45,9 @@ package:
 #artifact: my-service-code.zip
 
 functions:
+  query:
+    timeout: 300
+    handler: handler.query
   get:
     timeout: 30
     handler: handler.get

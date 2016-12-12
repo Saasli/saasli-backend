@@ -92,6 +92,16 @@ class SalesforceClient(object):
 		return out[4:] #greasy first AND skip
 
 
+	#perform a sf query with the given SF S(O)QL query specified
+	def query_sql(self, query_string):
+		resp = self.sf.query(query_string)
+		#Resp Like: OrderedDict([(u'totalSize', 1), (u'done', True), (u'records', [OrderedDict([(u'attributes', OrderedDict([(u'type', u'User_Usage_History_Event_Type__c'), (u'url', u'/services/data/v29.0/sobjects/User_Usage_History_Event_Type__c/a1Y1a000000VqAQEA0')])), (u'Id', u'a1Y1a000000VqAQEA0')])])])
+		if (resp.get('totalSize') > 0):
+			return resp.get('records')
+		#Resp Like: OrderedDict([(u'totalSize', 0), (u'done', True), (u'records', [])])
+		else:
+			return {'Id' : None}
+
 	#perform a sf query (SELECT only)
 	# where is an array of dicts where each dict contains the left and right terms as well as the operation between the two
 	# e.g. 

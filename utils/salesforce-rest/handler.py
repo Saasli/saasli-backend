@@ -14,6 +14,43 @@ def auth(payload):
 		)
 
 #####
+# query
+#
+# Returns the the results of a salesforce query where
+# a query is specified 
+#
+# @parm
+#  payload: dict with the following attributed
+#     username - Salesforce username
+#     password - Salesforce password
+#     token - Salesforce Token
+#     sf_query - The plain text S(O)QL query
+#
+#  returns e.g.
+#    array
+#   [
+#     {
+#         "attributes": {
+#             "type": "Contact",
+#             "url": "/services/data/v29.0/sobjects/Contact/0031a00000MGU6OAAX"
+#         },
+#         "Name": "Hank Unspecified",
+#         "Id": "0031a00000MGU6OAAX",
+#         "AccountId": "0011a00000QwmwcAAB",
+#         "Email": "hgoddard@saasli.com"
+#     },
+#     ...
+#   ]
+#
+######
+def query(payload):
+	logger.info('performing query with payload: {}'.format(payload))
+	sf = auth(payload)
+	return sf.query_sql(
+		payload.get('sf_query')
+	)
+
+#####
 # get
 #
 # Returns the first record matching the field value
