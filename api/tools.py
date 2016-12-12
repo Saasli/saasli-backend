@@ -90,7 +90,10 @@ class Request(object):
 		try:
 			self.clientid = self.body['client_id']
 		except KeyError, e:
-			raise MissingParameterError({'error' : '[400] No Client Id'})
+			try:
+				self.clientid = self.path['client_id'] # allow for new method of path passed client id
+			except KeyError, e:
+				raise MissingParameterError({'error' : '[400] No Client Id'})
 
 		# Get the version of the api
 		try:
