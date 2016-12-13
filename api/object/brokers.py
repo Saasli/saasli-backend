@@ -18,13 +18,13 @@ def isnum(str):
 
 class QueryTree(object):
     def __init__(self, lookupobjs, functions, credentials):
-    	self.functions
-    	self.credentials
+    	self.functions = functions
+    	self.credentials = credentials
         self.tree = {}
         for lookupobj in lookupobjs:
-            self.processLookup(lookupobj)
-        self.generateQueries()
-        self.getSFDCIds()
+            self.processLookup(lookupobj) #take the passed lookup field declarations and fit them to the tree
+        self.generateQueries() #generate one query per lookup object
+        self.getSFDCIds() #retrieve the SFDC Ids of the lookup objects
 
     def processLookup(self, lookupobj):
         obj, field, value = lookupobj['object'], lookupobj['field'], lookupobj['unique_value']
@@ -32,10 +32,10 @@ class QueryTree(object):
             self.tree[obj] = {} #make the new object dict
 
         if field not in self.tree[obj].keys():
-            self.tree[obj][field] = [] #make the new field array
+            self.tree[obj][field] = {} #make the new field object
 
-        if value not in self.tree[obj][field]:
-            self.tree[obj][field].append(value)
+        if value not in self.tree[obj][field].keys():
+            self.tree[obj][field][value] = None #add a placeholder for the SFDC id to be mapped
 
     def generateQueries(self):
         queries = []
@@ -46,18 +46,25 @@ class QueryTree(object):
                 fields.append('Id')
 
             for field in self.tree[obj].keys():
-                whereclause += '{} IN ({}) OR '.format(field, self.stringify(self.tree[obj][field]))
-            whereclause = whereclause[:-5]
+                whereclause += '{} IN ({}) OR '.format(field, self.stringify(self.tree[obj][field].keys()))
+            whereclause = whereclause[:-4]
             selectclause = 'SELECT {}'.format(self.stringify(fields, False))
             fromclause = 'FROM {}'.format(obj)
             self.tree[obj]['query'] = '{} {} {}'.format(selectclause, fromclause, whereclause)
         return self.tree
 
     def getSFDCIds(self):
-        for obj in self.tree.keys():
-            query_payload = { 'sf_query' : self.tree[obj]['query'] }
+        for obj in self.tree.keys(): #perform for each object in tree
+            query_payload = { 'sf_query' : self.tree[obj].pop('query') } #take the query out of the tree and put into a payload
             query_payload.update(self.credentials.__dict__)
-            print self.functions('salesforce-rest', 'query', query_payload)
+            results = self.functions.request('salesforce-rest', 'query', query_payload) #query the results
+            if results.get('totalSize') > 0:
+                for field in self.tree[obj].keys():
+                    for value in self.tree[obj][field].keys():
+                        matching = next((record for record in results['records'] if record[field] == value), None) #get the matching record's Id
+                        if matching is not None:
+                            self.tree[obj][field][value] = matching['Id']
+
 
 
     #little tool to turn an array into a field query string
@@ -89,13 +96,13 @@ class ObjectsRequest(Request):
 
 		# get the object external id field
 		try:
-			self.upsertfield = self.path['external_id_field']
+			self.upsertfield = self.path['unique_id']
 		except KeyError, e:
 			raise MissingParameterError({'error' : 'No Triggering Object Identifying Field Specified (sf_field_id)'})
 
 		# Get the objects
 		try:
-			self.objectsarray = self.body['objects']
+			self.objectsarray = self.body['records']
 		except KeyError, e:
 			raise MissingParameterError({'error' : 'No Objects Array Specified (objects)'})
 
@@ -121,78 +128,9 @@ class ObjectsRequest(Request):
 
 		# b) manufacture a data structure to hold all the records we're going to query for the lookups
 		try:
-			querytree = QueryTree(lookupobjects, self.functions)
+			querytree = QueryTree(lookupobjects, self.functions, self.credentials)
 		except Exception, e:
 			raise Exception({"error" : "Query Tree Failed to generate: {}".format(e)})
-		
-
-		# c) 
-
-		####
-		# 2) Triggering Objects
-		#
-		# Get the salesforce records that are to be associated to
-		# each of the events
-		####
-
-		# a) get the triggering records to be associated from SFDC (using list from 1b))
-		try:
-			triggering_records_conditions = [{
-					'a' : self.triggeringrecordfield,
-					'op' : 'IN',
-					'b' : '({})'.format(stringify(fieldvalues))
-			}]
-			triggering_records_payload = { 'sf_object_id' : self.triggeringrecordobjecttype, 'sf_select_fields' : [self.triggeringrecordfield, 'Id'], 'sf_conditions' : triggering_records_conditions }
-			triggering_records_payload.update(self.credentials.__dict__)
-			logger.info('Triggering Record Payload: {}'.format(triggering_records_payload))
-			triggering_records_id_results = self.functions.request('salesforce-bulk', 'get', triggering_records_payload)["results"]
-			logger.info('Triggering Record Payload Results: {}'.format(triggering_records_id_results))
-		except Exception, e:
-			raise Exception({ "error" : "Couldn't Get the triggering records: {}".format(e)})
-
-		# b) confirm that all the triggering records do exist
-		try:
-			self.triggering_records_mappings = {} #create a mapping of sf_field_value:Id for each event
-			if isinstance(fieldvalues[0], basestring): #if we're dealing with string identifiers we need to be a bit more careful
-				fieldvalues_lower = map(unicode.lower,fieldvalues) #clone a lowercase version for matching purposes
-				for triggering_record in triggering_records_id_results:
-					if (triggering_record[self.triggeringrecordfield].lower() in fieldvalues_lower): #It is possible for SFDC to return matchs with different cases. We'll compare case insensitive
-						index = fieldvalues_lower.index(triggering_record[self.triggeringrecordfield].lower()) #get the index in the lowercase list of the matching fieldvalue
-						self.triggering_records_mappings.update({fieldvalues[index] : triggering_record['Id']})
-						fieldvalues.pop(index) #get rid of the matched element from the fieldvalues
-						fieldvalues_lower.pop(index) #also apply to it's lowercase clone
-			else: #otherwise we need not worry about case, and treat normally
-				for triggering_record in triggering_records_id_results:
-					if (triggering_record[self.triggeringrecordfield] in fieldvalues): 
-						index = fieldvalues.index(triggering_record[self.triggeringrecordfield])
-						self.triggering_records_mappings.update({fieldvalues[index] : triggering_record['Id']})
-						fieldvalues.pop(index) #get rid of the matched element from the fieldvalues
-
-			print self.triggering_records_mappings
-		except Exception, e:
-			raise Exception({"error" : "Error Mapping User Usage History Event Type Names: {}".format(e)})
-
-		#TODO: Offer the ability to create new associating records should they not exist here.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
