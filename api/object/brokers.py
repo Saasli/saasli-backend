@@ -1,39 +1,38 @@
 from tools import *
 
-
-#little tool to turn an array into a field query string
-def stringify(array):
-    out = ""
-    for item in array:
-        out += ", {}".format(item) if isnum(item) else ", '{}'".format(item) #Don't wrap integers in quotes
-    return out[1:] #greasy skip the first comma
-
-#is the str actually an int?
-def isnum(str):
-	try:
-		float(str)
-		return True
-	except:
-		return False
-
+'''
+Class to facilitate mapping of lookup fields to actual SFDC Ids
+'''
 class QueryTree(object):
-    def __init__(self, lookupobjs, functions, credentials):
-    	self.functions = functions
-    	self.credentials = credentials
+    def __init__(self, objectsarray, functions, credentials):
+        self.objectsarray = objectsarray
+        self.functions = functions
+        self.credentials = credentials
         self.tree = {}
-        for lookupobj in lookupobjs:
-            self.processLookup(lookupobj) #take the passed lookup field declarations and fit them to the tree
+        self.lookupobjects = []
+        self.lookupExtraction() #extract all the fields representing lookups into an instance array
+        self.processLookups() #take the passed lookup field declarations and fit them to the tree
         self.generateQueries() #generate one query per lookup object
         self.getSFDCIds() #retrieve the SFDC Ids of the lookup objects
 
-
+    '''
+    lookupExtraction(self)
+    ----------------------
+    Given an array of records to be inserted into Salesforce, extract those representing
+    lookups, and store in an instance array.
+    '''
+    def lookupExtraction(self):
+        for objectrecord in self.objectsarray: #iterate through all the objects
+            for field in objectrecord.keys(): #iterate through all the object keys
+                if (type(objectrecord[field]) is dict): #check for instances of obj (means a lookup)
+                    self.lookupobjects.append(objectrecord[field]) #add to all the lookups
 
     '''
     processLookup(self, lookupobj)
     ------------------------------
     Takes an array of the form:
 
-    lookupobjs = [
+    lookupobjects = [
         {
             "Object" : "objectname",
             "Field" : "fieldname",
@@ -83,16 +82,17 @@ class QueryTree(object):
         },
     }
     '''
-    def processLookup(self, lookupobj):
-        obj, field, value = lookupobj['object'], lookupobj['field'], lookupobj['unique_value']
-        if obj not in self.tree.keys():
-            self.tree[obj] = {} #make the new object dict
+    def processLookups(self):
+        for lookupobj in self.lookupobjects:
+            obj, field, value = lookupobj['object'], lookupobj['field'], lookupobj['unique_value']
+            if obj not in self.tree.keys():
+                self.tree[obj] = {} #make the new object dict
 
-        if field not in self.tree[obj].keys():
-            self.tree[obj][field] = {} #make the new field object
+            if field not in self.tree[obj].keys():
+                self.tree[obj][field] = {} #make the new field object
 
-        if value not in self.tree[obj][field].keys():
-            self.tree[obj][field][value] = None #add a placeholder for the SFDC id to be mapped
+            if value not in self.tree[obj][field].keys():
+                self.tree[obj][field][value] = None #add a placeholder for the SFDC id to be mapped
 
     '''
     generateQueries(self)
@@ -119,7 +119,7 @@ class QueryTree(object):
 
     '''
     getSFDCIds(self)
-    ---------------------
+    -----------------
     Uses the querys created in generateQueries(self) and attempts to match as many
     Salesforce records as possible. The matching SFDC Ids are stored in the tree as the
     value cooresponding to each key in each Field object. Anything not matched will
@@ -156,6 +156,23 @@ class QueryTree(object):
                         if matching is not None:
                             self.tree[obj][field][value] = matching['Id']
 
+    '''
+    getMatchedObjectsArray(self)
+    ----------------------------
+    A method to return an array with fields representing lookups changed
+    to actual SFDC Ids they are denoting.
+    '''
+    def getMatchedObjectsArray(self):
+        for objectrecord in self.objectsarray: #iterate through all the objects
+            for field in objectrecord.keys(): #iterate through all the object keys
+                if (type(objectrecord[field]) is dict): #check for instances of obj (means a lookup)
+                    o, f, v = objectrecord[field]['object'], objectrecord[field]['field'], objectrecord[field]['unique_value']
+                    sfdcid = self.tree[o][f][v]
+                    if sfdcid is not None:
+                        objectrecord[field] = self.tree[o][f][v] #return the cooresponding Id from the tree
+                    else:
+                        objectrecord[field].pop() #get rid of the lookup if it doesn't exist
+        return self.objectsarray
 
 
     #little tool to turn an array into a field query string
@@ -175,53 +192,34 @@ class QueryTree(object):
             return False
 
 class ObjectsRequest(Request):
-	def __init__(self, event, context):
-		# Instantiate the base request
-		Request.__init__(self, event, context)
+    def __init__(self, event, context):
+        # Instantiate the base request
+        Request.__init__(self, event, context)
 
-		# Get the object type
-		try:
-			self.objecttype = self.path['object']
-		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Triggering Object Type Specified (sf_object_id)'})
+        # Get the object type
+        try:
+            self.object = self.path['object']
+        except KeyError, e:
+            raise MissingParameterError({'error' : 'No Object Type Specified (object) in URL path'})
 
-		# get the object external id field
-		try:
-			self.upsertfield = self.path['unique_id']
-		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Triggering Object Identifying Field Specified (sf_field_id)'})
+        # get the object external id field
+        try:
+            self.externalId = self.path['external_id']
+        except KeyError, e:
+            raise MissingParameterError({'error' : 'No Object External Id Field Specified (external_id) in URL path'})
 
-		# Get the objects
-		try:
-			self.objectsarray = self.body['records']
-		except KeyError, e:
-			raise MissingParameterError({'error' : 'No Objects Array Specified (objects)'})
+        # Get the objects
+        try:
+            self.objectsarray = self.body['records']
+        except KeyError, e:
+            raise MissingParameterError({'error' : 'No Objects Array Specified (records) in body'})
 
+        # Match all the lookup representations with actual SFDC Ids
+        try:
+            self.records = QueryTree(self.objectsarray, self.functions, self.credentials).getMatchedObjectsArray()
+        except Exception, e:
+            raise Exception({"error" : "Unable to associate lookups, malformed records array: {}".format(e)})
 
-		####
-		# 1) Lookup Objects
-		#
-		# Get the SFIDs of all the lookup records in the objects array
-		####
-
-		# a) pick out all fields representing a lookup field
-		try:
-			lookupobjects = []
-			i = 0
-			for objectrecord in self.objectsarray: #iterate through all the objects
-				for field in objectrecord.keys(): #iterate through all the object keys
-					if (type(objectrecord[field]) is dict): #check for instances of obj (means a lookup)
-						lookupobjects.append(objectrecord[field]) #add to all the lookups
-				i += 1
-		except KeyError, e:
-			logger.error('Error: {}'.format(e))
-			raise MissingParameterError({'error' : "Object {} Malformed in Object Array".format(str(i))})
-
-		# b) manufacture a data structure to hold all the records we're going to query for the lookups
-		try:
-			querytree = QueryTree(lookupobjects, self.functions, self.credentials)
-		except Exception, e:
-			raise Exception({"error" : "Query Tree Failed to generate: {}".format(e)})
 
 
 
