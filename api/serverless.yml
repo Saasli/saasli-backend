@@ -116,7 +116,7 @@ functions:
       - http:
           integration: lambda
           method: post
-          path: "{client_id}/bulk/{object}/{unique_id}"
+          path: "{client_id}/bulk/{object}/{external_id}"
     package:
       include:
         - object
