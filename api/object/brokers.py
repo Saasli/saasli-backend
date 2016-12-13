@@ -26,6 +26,63 @@ class QueryTree(object):
         self.generateQueries() #generate one query per lookup object
         self.getSFDCIds() #retrieve the SFDC Ids of the lookup objects
 
+
+
+    '''
+    processLookup(self, lookupobj)
+    ------------------------------
+    Takes an array of the form:
+
+    lookupobjs = [
+        {
+            "Object" : "objectname",
+            "Field" : "fieldname",
+            "Value": "value"
+        },
+        {
+            "Object" : "objectname",
+            "Field" : "fieldname",
+            "Value": "value"
+        },
+        {
+            "Object" : "objectname",
+            "Field" : "fieldname",
+            "Value": "value"
+        },
+        {
+            "Object" : "objectname",
+            "Field" : "fieldname",
+            "Value": "value"
+        },
+        {
+            "Object" : "objectname",
+            "Field" : "fieldname",
+            "Value": "value"
+        },
+    ]
+
+    And generates a tree of the form:
+
+    {
+        'Object' : {
+            'Field': {
+                {'Value' : None},
+                {'Value' : None},
+                {'Value' : None}
+            },
+            'Field': {
+                {'Value' : None},
+            }
+        },
+        'Object' : {
+            'Field': {
+                {'Value' : None},
+                {'Value' : None},
+                {'Value' : None}
+            }
+        },
+    }
+    '''
     def processLookup(self, lookupobj):
         obj, field, value = lookupobj['object'], lookupobj['field'], lookupobj['unique_value']
         if obj not in self.tree.keys():
@@ -37,6 +94,13 @@ class QueryTree(object):
         if value not in self.tree[obj][field].keys():
             self.tree[obj][field][value] = None #add a placeholder for the SFDC id to be mapped
 
+    '''
+    generateQueries(self)
+    ---------------------
+    Creates a S(O)QL query for each object in the tree. Ensuring that
+    Each field and Id is returned with the appropriate values in the Where
+    clause. The query is stored in an attribute of each object in the tree.
+    '''
     def generateQueries(self):
         queries = []
         for obj in self.tree.keys():
@@ -53,6 +117,33 @@ class QueryTree(object):
             self.tree[obj]['query'] = '{} {} {}'.format(selectclause, fromclause, whereclause)
         return self.tree
 
+    '''
+    getSFDCIds(self)
+    ---------------------
+    Uses the querys created in generateQueries(self) and attempts to match as many
+    Salesforce records as possible. The matching SFDC Ids are stored in the tree as the
+    value cooresponding to each key in each Field object. Anything not matched will
+    remain 'None' like this:
+    {
+        'Object' : {
+            'Field': {
+                {'Value' : 0011a00000DlaOWEAZ},
+                {'Value' : None},
+                {'Value' : 0011a00000Dlr4MAAZ}
+            },
+            'Field': {
+                {'Value' : 0011a00000Dla3YAAZ},
+            }
+        },
+        'Object' : {
+            'Field': {
+                {'Value' : None},
+                {'Value' : 0011a00000DlaOMIAZ},
+                {'Value' : 0011a00000DleOPAAZ}
+            }
+        },
+    }
+    '''
     def getSFDCIds(self):
         for obj in self.tree.keys(): #perform for each object in tree
             query_payload = { 'sf_query' : self.tree[obj].pop('query') } #take the query out of the tree and put into a payload
