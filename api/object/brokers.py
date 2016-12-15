@@ -163,7 +163,7 @@ class QueryTree(object):
     to actual SFDC Ids they are denoting.
     '''
     def getMatchedObjectsArray(self):
-        for objectrecord in self.objectsarray: #iterate through all the objects
+        for i, objectrecord in enumerate(self.objectsarray): #enumerate through all the objects
             for field in objectrecord.keys(): #iterate through all the object keys
                 if (type(objectrecord[field]) is dict): #check for instances of obj (means a lookup)
                     o, f, v = objectrecord[field]['object'], objectrecord[field]['field'], objectrecord[field]['unique_value']
@@ -171,14 +171,13 @@ class QueryTree(object):
                     if sfdcid is not None:
                         objectrecord[field] = self.tree[o][f][v] #return the cooresponding Id from the tree
                     else:
-                        objectrecord[field].pop() #get rid of the lookup if it doesn't exist
+                        del self.objectsarray[i][field] #get rid of the lookup if it doesn't exist
         return self.objectsarray
 
 
     #little tool to turn an array into a field query string
     def stringify(self, array, applyquotes=True):
         out = ""
-        print applyquotes
         for item in array:
             out += ", {}".format(item) if (self.isnum(item) or not applyquotes) else ", '{}'".format(item) #Don't wrap integers in quotes
         return out[2:] #greasy skip the first comma
