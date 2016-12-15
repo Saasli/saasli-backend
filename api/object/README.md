@@ -1,5 +1,7 @@
 ### Objects Endpoint
 
+[QA FILE](https://docs.google.com/spreadsheets/d/1Xqd82tuSdtiaQIBGWlcexpLTw_czBJJHH4RdLTuBntU/edit#gid=0)
+
 #### URL Params (path)
 
 ```
