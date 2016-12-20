@@ -39,11 +39,11 @@ class DatabaseCredentials(object):
 			'key' : 'id',
 			'tablename' : 'clients'
 		}
-		encryptedCredentials = functions.request('dynamodb','getitem', dynamoPayload)
+		self.row = functions.request('dynamodb','getitem', dynamoPayload) #attach the entire client row
 		logger.info('Retrieved Encrypted Database Credentials Successfully.')
 		# Decrypt the client credentials
 		kmsPayload = { 
-			'cipher' : encryptedCredentials.get('database').get('S')
+			'cipher' : self.row.get('database').get('S')
 		}
 		# Assign all the encrypted fields to class attributes
 		decryptedCredentials = functions.request('kms','decrypt', kmsPayload)['Plaintext']

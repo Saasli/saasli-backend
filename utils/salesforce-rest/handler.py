@@ -46,9 +46,11 @@ def auth(payload):
 def query(payload, context):
 	logger.info('performing query with payload: {}'.format(payload))
 	sf = auth(payload)
-	return sf.query_sql(
+	result = sf.query_sql(
 		payload.get('sf_query')
 	)
+	print result
+	return result
 
 #####
 # get

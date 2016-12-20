@@ -160,7 +160,7 @@ class QueryTree(object):
     getMatchedObjectsArray(self)
     ----------------------------
     A method to return an array with fields representing lookups changed
-    to actual SFDC Ids they are denoting.
+    to actual SFDC Ids they are denoting. NOTE: Removes any instances of null or None
     '''
     def getMatchedObjectsArray(self):
         for i, objectrecord in enumerate(self.objectsarray): #enumerate through all the objects

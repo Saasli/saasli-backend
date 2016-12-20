@@ -27,3 +27,6 @@ The following payload is expected by the microservice.
 | object | The object that the data rows polled from postgres are to be created as in Salesforce. | &#x1F534;`required` | 
 | external_id | The field on *object* that holds the external Id for the object. It must also have a cooresponding {field : value} pair in body for each record AND be of Data Type `(External ID)(Unique)` within Salesforce. | &#x1F534;`required` |
 | query | A Valid SQL query | &#x1F534;`required` |
+
+
+**NOTE:** as currently defined, posgres numeric values with decimals will be converted to strings.
