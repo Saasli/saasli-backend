@@ -24,6 +24,5 @@ def objects(event, context):
         }
         upsert_payload.update(request.credentials.__dict__)
         response = request.functions.request('salesforce-bulk', 'upsert', upsert_payload) # Fire the request
-        print response
     
     return({'Success' : True})

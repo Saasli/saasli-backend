@@ -83,7 +83,6 @@ class Request(object):
 		# Get the path
 		try:
 			self.path = event['path']
-			print self.path
 		except KeyError, e:
 			raise MissingParameterError({"error", "[400] No Path"})
 
@@ -171,5 +170,4 @@ class SFRecord(object):
 			'sf_values' : values
 		}
 		updatePayload.update(self.credentials.__dict__) #add in the creds
-		print updatePayload
 		return self.functions.request('salesforce-rest', 'update', updatePayload)

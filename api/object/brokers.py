@@ -172,6 +172,8 @@ class QueryTree(object):
                         objectrecord[field] = self.tree[o][f][v] #return the cooresponding Id from the tree
                     else:
                         del self.objectsarray[i][field] #get rid of the lookup if it doesn't exist
+                elif (objectrecord[field] is None):
+                    del self.objectsarray[i][field] #get rid of any null fields
         return self.objectsarray
 
 
