@@ -85,11 +85,18 @@ def poll(event, context):
 
     # Fire the query and collect the results
     try:
+        # Add last_id to query to collect new rows.
+        logger.info("last_id: {}".format(databaseCredentials.last_id))
+        query = event['query']
+        if salesforceObject == 'Inbound_API_Survey_Response__c':
+            query = "{}{}".format(query, databaseCredentials.last_id)
+        logger.info("query: {}".format(query))
         cursor.execute(query)
         columnNames = [desc[0] for desc in cursor.description] # get the names of the columns
         postgresRows = cursor.fetchall()
         if len(postgresRows) == 0: #we're done if there are no new rows
             return {"Result" : "No new Rows"}
+        newLastId = postgresRows[-1][0]
         logger.info("Rows polled: {}".format(len(postgresRows)))
     except Exception, e :
         raise Exception("Error performing query {}: {}".format(query, e))
@@ -108,7 +115,10 @@ def poll(event, context):
         for postgresName, salesforceName in fieldMap.items(): #iterate through the field map
             recordValue = record[columnNames.index(postgresName)] #get the postgreSQL column value
             if ismysqldatetime(recordValue): #if this representative of a date or datetime
-                recordValue = datetime2unix(recordValue) #convert it to a unix stamp
+                logger.info("pgname: {}".format(postgresName))
+                logger.info("sfname: {}".format(salesforceName))
+                logger.info("datetime: {}".format(recordValue))
+                recordValue = recordValue.isoformat() #convert it to a isoformat stamp
             if isdecimal(recordValue): #check to see if the variable is of decimal type
                 recordValue = decimal2string(recordValue) #convert to a string
             #if isDecimal(recordValue): #if this is representative of a decimal, make it a string. 
@@ -119,7 +129,7 @@ def poll(event, context):
     # 5) Build and send a payload of records to the /objects microservice for upload
     # ------------------------------------------------------------------------------------------
     logger.info("Records to be upserted: {}".format(len(records)))
-    return functions.request('api', 'objects', {
+    functions.request('api', 'objects', {
         "path" : {
             "client_id" : clientId,
             "object" : salesforceObject,
@@ -129,3 +139,9 @@ def poll(event, context):
             "records" : records
         }
     })
+    # ------------------------------------------------------------------------------------------
+    # 6) Update the database with the last queried id (only for survey responses)
+    # ------------------------------------------------------------------------------------------
+    if salesforceObject == 'Inbound_API_Survey_Response__c':
+        databaseCredentials.update_id(newLastId)
+    return {'success' : 'true'}

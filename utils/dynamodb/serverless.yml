@@ -20,6 +20,7 @@ provider:
     - Action:
         - dynamodb:GetItem
         - dynamodb:Query
+        - dynamodb:UpdateItem
       Effect: Allow
       Resource: arn:aws:dynamodb:*
 # you can add statements to the Lambda function's IAM Role here
@@ -53,6 +54,8 @@ provider:
 functions:
   getitem:
     handler: handler.getitem
+  updateitem:
+    handler: handler.updateitem
 
 #   you can add any of the following events
 #    events:

@@ -44,11 +44,20 @@ def poll(event, context):
 
         logger.info("Opening MySQL Cursor.")
         with connection.cursor() as cursor:
-            cursor.execute(event['query'])
+            # Add last_id to query to collect new rows.
+            logger.info("last_id: {}".format(databaseCredentials.last_id))
+            #query = event['query'] + databaseCredentials.last_id
+            query = "{}{}".format(event['query'], databaseCredentials.last_id)
+            logger.info("query: {}".format(query))
+            print(query)
+            # Execute the query
+            cursor.execute(query)
             rows = cursor.fetchall()
 
             if len(rows) > 0:
                 logger.info("MySQL Rows: {}".format(rows))
+                logger.info("Last Row: {}".format(rows[-1]))
+                logger.info("First Row: {}".format(rows[0]))
                 events = [] #instantiate the events array
                 for row in rows: #build the events array
                     # Base Event
